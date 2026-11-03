@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Engineer's Recipe Book</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+#a2hs{position:relative;max-width:760px;margin:0 auto 20px;padding:10px 40px 10px 12px;border:1px solid var(--rule);background:var(--cell);color:var(--ink);font-size:0.85rem;line-height:1.4}
+#a2hs button{position:absolute;top:2px;right:2px;width:36px;height:36px;border:0;background:transparent;color:var(--muted);font-size:1.2rem;cursor:pointer}
+#a2hs button:focus-visible{outline:2px solid var(--time)}</style>
+<style>
+/* Layout: one narrow column. Contents ledger first, then a section per category; every recipe is a ledger grid where ingredients feed the step cells to their right. */
+:root {
+  --paper: #eaf1ec;
+  --cell: #fafcfa;
+  --ink: #16241d;
+  --muted: #55675d;
+  --rule: #3f8f62;
+  --rule-soft: #b7d1bf;
+  --time: #1b6b52;
+  --tag-bg: #dcebe2;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111a15;
+    --cell: #19251f;
+    --ink: #e5eee8;
+    --muted: #95a99d;
+    --rule: #5fb07f;
+    --rule-soft: #2c4636;
+    --time: #7fd3ac;
+    --tag-bg: #213529;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111a15;
+  --cell: #19251f;
+  --ink: #e5eee8;
+  --muted: #95a99d;
+  --rule: #5fb07f;
+  --rule-soft: #2c4636;
+  --time: #7fd3ac;
+  --tag-bg: #213529;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 32px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 44px; }
+a { color: var(--time); text-underline-offset: 3px; }
+a:focus-visible, .scroll:focus-visible { outline: 2px solid var(--time); outline-offset: 3px; }
+
+h1 { font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.35rem; font-weight: 600; margin: 0; text-wrap: balance; }
+h3 { font-size: 1.1rem; font-weight: 600; margin: 0; text-wrap: balance; }
+.lede { margin: 8px 0 0; color: var(--muted); font-family: var(--font-data); font-size: 0.8rem; letter-spacing: 0.02em; }
+.intro { margin: 14px 0 0; max-width: 65ch; }
+
+/* contents ledger */
+.index { width: 100%; min-width: 560px; border-collapse: collapse; table-layout: fixed; }
+.index th, .index td { border: 1px solid var(--rule); background: var(--cell); padding: 6px 8px; text-align: left; vertical-align: top; font-size: 0.85rem; }
+.index th { font-family: var(--font-data); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--time); }
+.index tr > :first-child { border-left: 0; }
+.index tr > :last-child { border-right: 0; }
+.index tr:first-child > * { border-top: 0; }
+.index tr:last-child > * { border-bottom: 0; }
+.index td.cat { font-family: var(--font-data); font-size: 0.75rem; color: var(--muted); }
+.index td.num { font-family: var(--font-data); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.chips a { display: inline-block; padding: 4px 10px; border: 1px solid var(--rule); background: var(--cell); color: var(--ink); text-decoration: none; font-family: var(--font-data); font-size: 0.78rem; }
+.chips a:hover { background: var(--tag-bg); }
+
+.scroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--cell); }
+
+/* category sections */
+section.cat { display: flex; flex-direction: column; gap: 30px; scroll-margin-top: 16px; }
+.cathead { border-bottom: 2px solid var(--rule); padding-bottom: 8px; }
+.cathead p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; max-width: 65ch; }
+
+article.recipe { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 16px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.tags li { background: var(--tag-bg); color: var(--ink); font-family: var(--font-data); font-size: 0.7rem; letter-spacing: 0.04em; padding: 2px 8px; }
+
+/* recipe grid (same treatment as the hummus page) */
+table.recipe { border-collapse: collapse; table-layout: fixed; width: 100%; min-width: 600px; }
+table.recipe th, table.recipe td { border: 1px solid var(--rule); padding: 6px 8px; background: var(--cell); }
+table.recipe th.title { text-align: left; font-weight: 600; font-size: 0.95rem; padding: 7px 8px; border-top: 0; border-left: 0; border-right: 0; }
+table.recipe td.ing { text-align: left; font-size: 0.88rem; line-height: 1.3; }
+table.recipe td.prep { text-align: left; color: var(--muted); font-size: 0.8rem; }
+table.recipe td.step { text-align: center; vertical-align: middle; font-size: 0.8rem; line-height: 1.35; padding: 6px 6px; }
+table.recipe td.blank { background: transparent; }
+.q { font-family: var(--font-data); font-weight: 500; font-size: 0.8rem; }
+.t { display: block; margin-top: 3px; font-family: var(--font-data); font-weight: 500; color: var(--time); font-size: 0.78rem; }
+table.recipe tr > :first-child { border-left: 0; }
+table.recipe tr > :last-child { border-right: 0; }
+table.recipe tr:last-child > * { border-bottom: 0; }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 28px; margin: 0; }
+.notes > div { min-width: 0; border-top: 1px solid var(--rule-soft); padding-top: 8px; }
+.notes dt { font-family: var(--font-data); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--time); margin: 0 0 4px; }
+.notes dd { margin: 0; font-size: 0.9rem; max-width: 65ch; }
+
+.hint { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.foot { margin: 0; color: var(--muted); font-size: 0.8rem; max-width: 65ch; }
+.top { font-family: var(--font-data); font-size: 0.75rem; }
+
+
+/* dish photos */
+figure.photo { margin: 0; display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
+figure.photo img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border: 1px solid var(--rule); background: var(--cell); }
+figure.photo figcaption { color: var(--muted); font-size: 0.78rem; font-family: var(--font-data); }
+figure.slot { border: 1px dashed var(--rule); background: var(--cell); padding: 14px 12px; }
+figure.slot p { margin: 0; font-size: 0.85rem; color: var(--muted); max-width: 40ch; }
+.photoact { display: flex; flex-wrap: wrap; gap: 8px; }
+.photobtn, .photoact button { position: relative; display: inline-block; padding: 6px 12px; border: 1px solid var(--rule); background: var(--cell); color: var(--ink); font-family: var(--font-data); font-size: 0.78rem; line-height: 1.3; cursor: pointer; }
+.photobtn:hover, .photoact button:hover { background: var(--tag-bg); }
+.photobtn:focus-within, .photoact button:focus-visible { outline: 2px solid var(--time); outline-offset: 2px; }
+.photobtn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+@media print {
+  figure.slot, .photoact { display: none; }
+  @page { size: A4; margin: 14mm; }
+  html:root:root:root { --paper: #fff; --cell: #fff; --ink: #111; --muted: #444; --rule: #2d6a4a; --rule-soft: #bbb; --time: #1b6b52; --tag-bg: #e6efe9; color-scheme: light; }
+  body { padding: 0; }
+  main { max-width: none; }
+  .scroll { overflow: visible; }
+  table.recipe, .index { min-width: 0; }
+  .chips, .hint, .top { display: none; }
+  article.recipe, .notes > div { break-inside: avoid; }
+  section.cat { break-before: page; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<style>
+/* App layer styles; reuse the book's palette variables. */
+.rb-bar{position:sticky;top:0;z-index:20;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 8px;background:var(--paper);border-bottom:1px solid var(--rule-soft)}
+.rb-tab,.rb-btn{font:500 0.95rem var(--font-body);color:var(--ink);background:var(--cell);border:1px solid var(--rule);border-radius:6px;min-height:40px;padding:6px 12px;cursor:pointer}
+.rb-btn{min-width:40px;padding:4px 10px}
+.rb-primary{background:var(--rule);color:#fff;border-color:var(--rule)}
+.rb-danger{background:#a33;color:#fff;border-color:#a33}
+.rb-link{background:transparent;border-color:transparent;text-decoration:underline;color:var(--time)}
+.rb-tab:focus-visible,.rb-btn:focus-visible{outline:2px solid var(--time);outline-offset:2px}
+.rb-btn:disabled{opacity:.5;cursor:wait}
+#rb-status{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:90vw;margin:0;padding:10px 14px;background:var(--ink);color:var(--paper);border-radius:6px;font:0.9rem var(--font-body)}
+.rb-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 2px}
+.rb-ctl output,.rb-row output{font:500 1rem var(--font-data);min-width:2ch;text-align:center}
+.rb-lbl{font:500 0.8rem var(--font-data);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.rb-add.on{background:var(--tag-bg)}
+.rb-hint{margin:2px 0 0;font-size:.78rem;color:var(--muted)}
+.scaled span.q{background:var(--tag-bg);border-radius:3px}
+dialog{width:min(640px,94vw);max-height:88vh;overflow:auto;border:1px solid var(--rule);border-radius:10px;background:var(--paper);color:var(--ink);padding:16px;font-family:var(--font-body)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.rb-dhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rb-dhead h2,dialog h2{margin:0;font-size:1.3rem}
+.rb-sub{color:var(--muted);font-size:.9rem;margin:6px 0 12px}
+.rb-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0}
+.rb-grow{flex:1 1 200px;color:var(--ink)}
+.rb-actions{margin-top:14px}
+.rb-empty{color:var(--muted);font-style:italic}
+#rb-shop-list h4{margin:16px 0 4px;font:600 .8rem var(--font-data);text-transform:uppercase;letter-spacing:.06em;color:var(--time);border-bottom:1px solid var(--rule-soft)}
+.rb-item{display:grid;grid-template-columns:auto 6.5em 1fr;gap:4px 8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--rule-soft)}
+.rb-item input{width:20px;height:20px}
+div.rb-item{grid-template-columns:6.5em 1fr;padding-left:28px}
+.rb-item small{grid-column:3;color:var(--muted);font-size:.75rem}
+.rb-item.done span{text-decoration:line-through;color:var(--muted)}
+.rb-amt{font-family:var(--font-data)}
+.rb-field{display:block;margin:10px 0;font-weight:500}
+.rb-field input,.rb-field textarea,#rb-menu-name,#rb-preview input,#rb-shop-text{display:block;width:100%;box-sizing:border-box;margin-top:4px;font:1rem var(--font-body);padding:8px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--cell);color:var(--ink)}
+#rb-menu-name{flex:1 1 180px;width:auto;margin:0}
+#rb-preview input{display:inline-block;width:auto;max-width:12em}
+.rb-check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+#rb-preview{margin-top:10px}
+#rb-preview h3{border-bottom:1px dashed var(--rule-soft)}
+.rb-note{font-size:.85rem;color:var(--muted)}
+figure.rb-slot p{color:var(--muted);font-size:.9rem}
+@media print{.rb-bar,.rb-ctl,.rb-hint,dialog,#rb-status,.photoact{display:none!important}}
+article.recipe,section.cat{scroll-margin-top:72px}
+.rb-pick{display:inline-flex;align-items:center;gap:4px;position:relative}
+.rb-vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+.rb-pick:focus-within{outline:2px solid var(--time);outline-offset:2px}
+.rb-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.rb-thumb{position:relative}
+.rb-thumb img{width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid var(--rule-soft);display:block}
+.rb-thumb .rb-btn{position:absolute;top:-8px;right:-8px;min-width:32px;min-height:32px;padding:0;border-radius:50%}
+.rb-cont{margin:8px 0 0;font-size:.85rem}
+.rb-cont ul,.rb-mcont{margin:2px 0 0;padding-left:1.2em}
+.rb-mcont{font-size:.8rem;color:var(--muted);margin:-2px 0 8px}
+.rb-unit{font-size:.8rem;color:var(--muted);min-width:5.5em}
+#rb-menu-list .rb-grow{flex-basis:100%}
+table.index .rb-ixc{text-align:center}
+.rb-ixtick{text-align:center}
+.rb-tickbox{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;cursor:pointer}
+.rb-tickbox input{width:22px;height:22px;accent-color:var(--rule);cursor:pointer}
+.rb-ixn{white-space:nowrap}
+.rb-ixn input{width:3.4em;font:1rem var(--font-data);padding:4px;border:1px solid var(--rule-soft);border-radius:4px;background:var(--cell);color:var(--ink)}
+.rb-ixn .rb-unit{display:block;min-width:0;font-size:.72rem}
+table.index tr.rb-on td{background:var(--tag-bg)}
+.rb-step{margin:18px 0 4px;font:600 .85rem var(--font-data);text-transform:uppercase;letter-spacing:.06em;color:var(--time)}
+#rb-verify{border-top:2px solid var(--rule);margin-top:12px}
+.rb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0}
+.rb-grid label{display:flex;flex-direction:column;font-size:.85rem;font-weight:500}
+#rb-preview .rb-grid input{max-width:none;width:100%;box-sizing:border-box}
+#rb-preview table[contenteditable]{outline:2px dashed var(--rule-soft);outline-offset:2px}
+.rb-warnbox{border-left:4px solid #b7791f;background:#fdf6e3;color:#4a3b10;padding:8px 12px;border-radius:4px;font-size:.9rem}
+.rb-warnbox ul{margin:4px 0 0;padding-left:1.2em}
+.rb-okbox{border-left:4px solid var(--rule);background:var(--tag-bg);padding:8px 12px;border-radius:4px;font-size:.9rem;margin:0}
+.rb-checks{border:1px solid var(--rule-soft);border-radius:6px;padding:8px 12px;margin:6px 0}
+.rb-checks legend{font-size:.85rem;color:var(--muted);padding:0 4px}
+.rb-checks .rb-check{padding:6px 0}
+.rb-checks input{width:20px;height:20px}
+.rb-clist{margin:4px 0;padding-left:1.2em;font-weight:400;font-size:.9rem}
+.rb-ixrow{display:flex;align-items:center;gap:4px}
+.rb-ixreset{min-width:32px;min-height:32px;padding:0;font-size:1rem}
+.rb-ixtools{display:flex;justify-content:flex-end;margin:4px 0}
+.rb-thumbs{flex-direction:column}
+.rb-thumbwrap{display:flex;gap:10px;align-items:flex-start}
+.rb-thumb.bad{width:84px;height:84px;border:2px solid #a33;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none}
+.rb-thumbbad{font-size:2rem;color:#a33}
+.rb-thumb{flex:none}
+.rb-thumbmsg{margin:0;font-size:.85rem;padding:4px 8px;border-radius:4px}
+.rb-thumbmsg.bad{background:#fbeaea;color:#7a1f1f;border-left:4px solid #a33}
+.rb-thumbmsg.warn{background:#fdf6e3;color:#4a3b10;border-left:4px solid #b7791f}
+.cheese-note{margin:28px 0 8px;padding:14px 16px;border:1px solid var(--rule);border-left:6px solid var(--rule);border-radius:6px;background:var(--cell)}
+.cheese-note h3{margin:0 0 4px}
+.cheese-note .notes{margin-top:8px}
+.cheese-note{scroll-margin-top:72px}
+
+
+</style>
+</head>
+<body>
+<nav class="rb-bar" aria-label="Recipe book tools">
+  <button type="button" id="rb-open-menu" class="rb-tab">Menu<span id="rb-menu-count"></span></button>
+  <button type="button" id="rb-open-shop" class="rb-tab">Shopping list</button>
+  <button type="button" id="rb-open-add" class="rb-tab rb-primary">+ Add a recipe</button>
+</nav>
+<p id="rb-status" role="status" aria-live="polite" hidden></p>
+
+<dialog id="rb-menu" aria-labelledby="rb-menu-h">
+  <div class="rb-dhead"><h2 id="rb-menu-h">Menu</h2><button type="button" class="rb-btn rb-close" aria-label="Close">✕</button></div>
+  <p class="rb-sub">Tick dishes in the <b>Menu</b> column of the contents list, or use <b>+ Add to menu</b> on any recipe. Set the number of portions (or batches) for each dish in the contents list or here. The ingredient amounts and container sizes scale to match, and the shopping list adds up everything you need.</p>
+  <div id="rb-menu-list"></div>
+  <div class="rb-row rb-actions">
+    <button type="button" id="rb-clear" class="rb-btn rb-link">Clear menu</button>
+    <button type="button" class="rb-btn rb-primary" onclick="document.getElementById('rb-open-shop').click()">Shopping list →</button>
+  </div>
+  <div id="rb-saved-wrap">
+    <h3>Saved menus</h3>
+    <div class="rb-row"><input id="rb-menu-name" placeholder="Name, e.g. Christmas lunch" aria-label="Menu name"><button type="button" id="rb-save-menu" class="rb-btn">Save this menu</button></div>
+    <div id="rb-saved"></div>
+  </div>
+</dialog>
+
+<dialog id="rb-shop" aria-labelledby="rb-shop-h">
+  <div class="rb-dhead"><h2 id="rb-shop-h">Shopping list</h2><button type="button" class="rb-btn rb-close" aria-label="Close">✕</button></div>
+  <p class="rb-sub">Same items are added up across the menu. Tick items off as you shop.</p>
+  <div class="rb-row rb-actions"><button type="button" id="rb-copy" class="rb-btn rb-primary">Copy list</button><button type="button" id="rb-untick" class="rb-btn rb-link">Untick all</button></div>
+  <div id="rb-shop-list"></div>
+  <textarea id="rb-shop-text" rows="10" hidden aria-label="Shopping list text"></textarea>
+</dialog>
+
+<dialog id="rb-add" aria-labelledby="rb-add-h">
+  <div class="rb-dhead"><h2 id="rb-add-h">Add a recipe</h2><button type="button" class="rb-btn rb-close" aria-label="Close">✕</button></div>
+  <h3 class="rb-step">Step 1 · Photos or text</h3>
+  <p class="rb-sub">Take or choose photos of a recipe card or book page, or paste the text. It can be in any language (Afrikaans, Arabic, French and so on). Claude translates it into English and turns it into the ledger format.</p>
+  <div class="rb-field">Photos (up to 4)
+    <div class="rb-row">
+      <label class="rb-btn rb-primary rb-pick">📷 Take photo<input type="file" id="rb-cam" accept="image/*" capture="environment" class="rb-vh"></label>
+      <label class="rb-btn rb-pick">🖼 Choose photos<input type="file" id="rb-files" accept="image/*" multiple class="rb-vh"></label>
+    </div>
+    <div id="rb-thumbs" class="rb-thumbs"></div>
+  </div>
+  <label class="rb-check"><input type="checkbox" id="rb-usephoto"> Use the first photo as the dish photo</label>
+  <label class="rb-field">or paste the recipe text<textarea id="rb-text" rows="5" placeholder="Paste ingredients and method here, in any language"></textarea></label>
+  <div class="rb-row rb-actions"><button type="button" id="rb-process" class="rb-btn rb-primary">Process with Claude</button></div>
+  <p id="rb-add-msg" class="rb-sub" role="status" aria-live="polite"></p>
+  <section id="rb-verify" hidden aria-labelledby="rb-step2">
+    <h3 class="rb-step" id="rb-step2">Step 2 · Check and edit</h3>
+    <p class="rb-sub">Compare Claude's version with your photos or text. Tap the title or any cell in the table to correct it. Fix the details below if needed.</p>
+    <div id="rb-warn" role="status" aria-live="polite"></div>
+    <div id="rb-preview"></div>
+    <h3 class="rb-step">Step 3 · Save</h3>
+    <fieldset id="rb-checks" class="rb-checks">
+      <legend>Tick when checked</legend>
+      <label class="rb-check"><input type="checkbox"> Ingredients and amounts match the original</label>
+      <label class="rb-check"><input type="checkbox"> Steps, times and temperatures are right and in order</label>
+      <label class="rb-check"><input type="checkbox"> Title, category, portions and containers are right</label>
+    </fieldset>
+    <div class="rb-row rb-actions"><button type="button" id="rb-save" class="rb-btn rb-primary" disabled>Save to the book</button><button type="button" id="rb-redo" class="rb-btn rb-link">Process again</button></div>
+  </section>
+  <datalist id="rb-cats"></datalist>
+</dialog>
+
+<dialog id="rb-del" aria-labelledby="rb-del-h">
+  <h2 id="rb-del-h">Delete recipe?</h2>
+  <p>"<span id="rb-del-name"></span>" will be removed from the book for everyone.</p>
+  <div class="rb-row rb-actions"><button type="button" id="rb-del-no" class="rb-btn">Keep it</button><button type="button" id="rb-del-yes" class="rb-btn rb-danger">Delete</button></div>
+</dialog>
+
+<main id="top">
+  <header>
+    <h1>Engineer's Recipe Book</h1>
+    <p class="lede">21 RECIPES · 11 CATEGORIES · INGREDIENTS READ LEFT TO RIGHT INTO THE STEPS</p>
+    <p class="intro">A family collection laid out in the style of Cooking For Engineers. Every recipe is a grid: ingredients on the left, then the steps that act on them, with each step spanning every ingredient it touches. Metric amounts are approximate conversions from cups and spoons.</p>
+  </header>
+
+  <nav aria-label="Categories">
+    <ul class="chips">
+      <li><a href="#dips-spreads">Dips &amp; Spreads</a></li>
+      <li><a href="#sauces">Sauces</a></li>
+      <li><a href="#plant-based-cheeses">Plant-based cheeses</a></li>
+      <li><a href="#beef">Beef</a></li>
+      <li><a href="#pork">Pork</a></li>
+      <li><a href="#chicken">Chicken</a></li>
+      <li><a href="#fish">Fish</a></li>
+      <li><a href="#breads">Breads</a></li>
+      <li><a href="#eggs-quick">Eggs &amp; Quick Meals</a></li>
+      <li><a href="#breakfast">Breakfast</a></li>
+      <li><a href="#sweets">Sweets</a></li>
+    </ul>
+  </nav>
+
+  <div class="scroll" tabindex="0" role="region" aria-label="Contents table, scrolls sideways on narrow screens">
+    <table class="index">
+      <colgroup><col style="width: 34%"><col style="width: 19%"><col style="width: 22%"><col style="width: 25%"></colgroup>
+      <tr><th>Recipe</th><th>Category</th><th>Time</th><th>Keeps (fridge)</th></tr>
+      <tr><td><a href="#hummus">Soft-serve hummus</a></td><td class="cat">Dips &amp; Spreads</td><td class="num">90 sec + 30 min rest</td><td class="num">not recorded</td></tr>
+      <tr><td><a href="#tomato-sauce">Silky rich tomato sauce</a></td><td class="cat">Sauces</td><td class="num">not recorded</td><td class="num">not recorded</td></tr>
+      <tr><td><a href="#potato-sauce">Nut-free potato-carrot cheddar sauce</a></td><td class="cat">Plant-based cheeses</td><td class="num">about 25 min</td><td class="num">4-5 days</td></tr>
+      <tr><td><a href="#mozzarella">Stretchy mozzarella-style</a></td><td class="cat">Plant-based cheeses</td><td class="num">10 min + 2 h chill</td><td class="num">5 days</td></tr>
+      <tr><td><a href="#quick-pizza">Quick 5-minute pizza cheese</a></td><td class="cat">Plant-based cheeses</td><td class="num">5 min</td><td class="num">3 days</td></tr>
+      <tr><td><a href="#cheddar-block">Sliceable cheddar block</a></td><td class="cat">Plant-based cheeses</td><td class="num">10 min + 2 h chill</td><td class="num">5-7 days</td></tr>
+      <tr><td><a href="#cultured">Cultured, tangy aged cheese</a></td><td class="cat">Plant-based cheeses</td><td class="num">24-48 h ferment + 12-24 h press</td><td class="num">7-10 days</td></tr>
+      <tr><td><a href="#korean-beef-bibimbap">Korean beef bibimbap</a></td><td class="cat">Beef</td><td class="num">50 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#spicy-beef-vindaloo">Spicy beef vindaloo</a></td><td class="cat">Beef</td><td class="num">30 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#beef-rump-gratin">Beef rump and potato au gratin</a></td><td class="cat">Beef</td><td class="num">45 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#peach-paprika-kassler">Peach and paprika kassler</a></td><td class="cat">Pork</td><td class="num">40 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#chicken-kiev-meatballs">Chicken kiev meatballs and broccoli</a></td><td class="cat">Chicken</td><td class="num">45 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#tropical-balsamic-tortilla">Tropical balsamic chicken tortilla</a></td><td class="cat">Chicken</td><td class="num">20 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#red-pesto-polenta-chicken">Red pesto polenta and creamy chicken</a></td><td class="cat">Chicken</td><td class="num">40 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#rainbow-trout-lemon-chilli">Rainbow trout and lemon-chilli dressing</a></td><td class="cat">Fish</td><td class="num">35 min total</td><td class="num">serve fresh</td></tr>
+      <tr><td><a href="#indian-roti">Indian roti with all-purpose flour</a></td><td class="cat">Breads</td><td class="num">about 45 min incl. rest</td><td class="num">best served hot</td></tr>
+      <tr><td><a href="#tin-mug-quiche">Quiche in a tin mug</a></td><td class="cat">Eggs &amp; Quick Meals</td><td class="num">about 10 min</td><td class="num">best eaten fresh</td></tr>
+      <tr><td><a href="#bbq-quesadilla">BBQ chicken and pineapple quesadilla</a></td><td class="cat">Eggs &amp; Quick Meals</td><td class="num">15 min</td><td class="num">best eaten fresh</td></tr>
+      <tr><td><a href="#eggless-waffles">Eggless vanilla waffles with chocolate sauce</a></td><td class="cat">Breakfast</td><td class="num">20 min</td><td class="num">freezes</td></tr>
+      <tr><td><a href="#malva-koppie">Malva koppie pudding</a></td><td class="cat">Sweets</td><td class="num">about 40 min</td><td class="num">serve warm</td></tr>
+      <tr><td><a href="#appeltert-potjie">Apple tart in a potjie</a></td><td class="cat">Sweets</td><td class="num">about 1 h 10 min</td><td class="num">serve warm</td></tr>
+    </table>
+  </div>
+
+  
+  <section class="cat" id="dips-spreads" aria-labelledby="h-dips-spreads">
+    <div class="cathead">
+      <h2 id="h-dips-spreads">Dips &amp; Spreads</h2>
+      <p>Served cold or at room temperature, scooped with bread or vegetables.</p>
+    </div>
+
+    <article class="recipe" id="hummus">
+      <header>
+        <h3>Soft-serve hummus</h3>
+        <p class="lede">MAKES ~2 CUPS · 90 SEC IN THE PROCESSOR · 30 MIN REST</p>
+        <ul class="tags"><li>Vegan</li><li>Sesame</li><li>No cooking</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Hummus recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Hummus (makes about 2 cups)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1 can (15 oz / 425 g)</span> chickpeas</td>
+            <td class="prep">drain &amp; rinse</td>
+            <td class="step" rowspan="5">process alone until ground<span class="t">15 sec</span></td>
+            <td class="step" rowspan="7">drizzle in slowly with processor running</td>
+            <td class="step" rowspan="9">drizzle in slowly with processor running</td>
+            <td class="step" rowspan="9">rest at room temp<span class="t">30 min</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">1 small</span> garlic clove</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">½ tsp</span> salt</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¼ tsp</span> cumin</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">pinch</span> cayenne</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">3 Tbs. (45 mL)</span> lemon juice</td><td class="prep"></td>
+            <td class="step" rowspan="2">mix</td>
+          </tr>
+          <tr><td class="ing"><span class="q">¼ cup (60 mL)</span> water</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">6 Tbs. (90 mL)</span> tahini</td><td class="prep"></td>
+            <td class="step" colspan="2" rowspan="2">whisk together</td>
+          </tr>
+          <tr><td class="ing"><span class="q">2 Tbs. (30 mL)</span> olive oil</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Texture target</dt><dd>Soft-serve. Light, holds a peak, and drops off the spoon slowly.</dd></div>
+        <div><dt>Too stiff</dt><dd>Add 1 Tbs. of warm water at a time.</dd></div>
+        <div><dt>Too soupy</dt><dd>Too much lemon-water went in during the first drizzle. Add more chickpeas or tahini.</dd></div>
+        <div><dt>Canned beats dried</dt><dd>Rinsed canned chickpeas gave a smoother result than overnight-soaked dried ones, whose skins turned gritty.</dd></div>
+        <div><dt>Why rest it</dt><dd>Flavours fuse, the garlic loses its raw edge, and the texture firms up to a spreadable density.</dd></div>
+        <div><dt>Order matters</dt><dd>Grind the dry group first, then drizzle. The drizzling is not optional.</dd></div>
+      </dl>
+      <p class="foot">The cayenne is not placed in a step in the original post, so it sits with the other spices here.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="sauces" aria-labelledby="h-sauces">
+    <div class="cathead">
+      <h2 id="h-sauces">Sauces</h2>
+      <p>Pourable when hot, and made to coat pasta, toasties and meatballs.</p>
+    </div>
+
+    <article class="recipe" id="tomato-sauce">
+      <header>
+        <h3>Silky rich tomato sauce</h3>
+        <p class="lede">A SAUCE FOR MEATBALLS · SOFTENED VEGETABLES, WINE, TOMATOES, THEN BLITZED SMOOTH</p>
+        <ul class="tags"><li>Contains wine</li><li>Chicken stock</li><li>Nut-free</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Silky rich tomato sauce recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Silky rich tomato sauce</th></tr>
+          <tr>
+            <td class="ing"><span class="q">2 Tbs.</span> extra-virgin olive oil</td>
+            <td class="prep"></td>
+            <td class="step" rowspan="7">sauté until the vegetables soften and the carrot turns sweet</td>
+            <td class="step" rowspan="9">stir in the tomato paste, add the wine, reduce by half<span class="t">about 2 min</span></td>
+            <td class="step" rowspan="13">add tomatoes and stock, season, then simmer and reduce</td>
+            <td class="step" rowspan="13">remove bay leaf and thyme, blitz in a blender, return to a simmer</td>
+          </tr>
+          <tr><td class="ing"><span class="q">½</span> brown onion</td><td class="prep">finely chopped</td></tr>
+          <tr><td class="ing"><span class="q">1 small</span> carrot</td><td class="prep">peeled, finely diced</td></tr>
+          <tr><td class="ing"><span class="q">½ stalk</span> celery</td><td class="prep">finely diced</td></tr>
+          <tr><td class="ing"><span class="q">2</span> garlic cloves</td><td class="prep">finely minced</td></tr>
+          <tr><td class="ing"><span class="q">1</span> bay leaf</td><td class="prep">preferably fresh</td></tr>
+          <tr><td class="ing"><span class="q">1</span> thyme sprig</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">3 Tbs.</span> tomato paste</td><td class="prep"></td>
+            <td class="step blank" rowspan="6"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">185 mL (¾ cup)</span> pinot noir wine</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">400 g can</span> chopped tomatoes</td><td class="prep"></td>
+            <td class="step blank" rowspan="4"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">500 mL (2 cups)</span> chicken stock</td><td class="prep">low-salt</td></tr>
+          <tr><td class="ing"><span class="q">½ tsp</span> salt</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¼ tsp</span> black pepper</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <p class="foot">The ingredient list is transcribed from a photographed cookbook page. The page edge cuts off the method, so the steps above are reconstructed from the visible fragments. Cooking times, the simmer length, yield, and the two footnotes marked on the page are not visible and are left out.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="plant-based-cheeses" aria-labelledby="h-plant-based-cheeses">
+    <div class="cathead">
+      <h2 id="h-plant-based-cheeses">Plant-based cheeses</h2>
+      <p>Dairy-free cheeses: a cheddar sauce, two that soften and stretch in a hot oven (tapioca starch, cooked until thick), and two set cashew cheeses that slice and grate. See the note at the end for melt and flavour tips.</p>
+    </div>
+
+    <article class="recipe" id="potato-sauce">
+      <header>
+        <h3>Nut-free potato-carrot cheddar sauce</h3>
+        <p class="lede">MAKES ~2 CUPS · POURABLE HOT, THICKENS AS IT COOLS</p>
+        <ul class="tags"><li>Vegan</li><li>Nut-free</li><li>For nachos, mac, toasties</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Potato-carrot cheddar sauce recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Potato-carrot cheddar sauce (makes about 2 cups)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1 cup (150 g)</span> potato</td>
+            <td class="prep">peeled, diced</td>
+            <td class="step" rowspan="2">boil until very soft, keep the water<span class="t">15 min</span></td>
+            <td class="step" rowspan="8">blend while hot until silky<span class="t">1-2 min</span></td>
+            <td class="step" colspan="2" rowspan="8">thin with extra cooking water if needed</td>
+          </tr>
+          <tr><td class="ing"><span class="q">¼ cup (30 g)</span> carrot</td><td class="prep">diced</td></tr>
+          <tr>
+            <td class="ing"><span class="q">⅓ cup (80 mL)</span> olive or sunflower oil</td><td class="prep">add slowly</td>
+            <td class="step blank" rowspan="6"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">¼ cup</span> nutritional yeast</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 Tbs. (15 mL)</span> lemon juice</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> salt</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">½ tsp each</span> garlic powder, onion powder</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¾ cup (180 mL)</span> cooking water</td><td class="prep">from the pot</td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Boil</dt><dd>Cut the potato into small, even cubes so it cooks in about 15 minutes. A fork should crush it with no resistance.</dd></div>
+        <div><dt>Blend</dt><dd>Blend while the vegetables are hot, for 1-2 minutes, until completely smooth. Add the oil slowly with the blender running so it emulsifies.</dd></div>
+        <div><dt>Thin it</dt><dd>Add cooking water a little at a time. The sauce thickens a lot as it cools, so make it slightly thinner than you want.</dd></div>
+        <div><dt>Reheat</dt><dd>Warm gently in a pot over low heat, stirring, with a splash of water or plant milk to loosen it.</dd></div>
+        <div><dt>Bake it on</dt><dd>For a bubbly topping, spoon it on and grill for 3-5 minutes.</dd></div>
+        <div><dt>Storage</dt><dd><strong>Fridge:</strong> 4-5 days, airtight. It sets firm and needs reheating with a splash of liquid. <strong>Freezer:</strong> up to 2 months. Thaw in the fridge, then re-blend or whisk while reheating, because it can turn slightly grainy. Discard if it smells sour or looks slimy, as it is a moist, low-acid sauce.</dd></div>
+      <div><dt>Plant-based cheese tips</dt><dd><a href="#cheese-tips">Melt, flavour and storage tips</a> that apply to all the plant-based cheeses.</dd></div></dl>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="mozzarella">
+      <header>
+        <h3>Stretchy mozzarella-style</h3>
+        <p class="lede">MAKES ~1.5 CUPS · BUBBLES, SOFTENS AND STRETCHES IN A HOT OVEN</p>
+        <ul class="tags"><li>Vegan</li><li>Cashew</li><li>Best for pizza</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Mozzarella-style recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Mozzarella-style cheese (makes about 1.5 cups)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">½ cup (70 g)</span> raw cashews</td>
+            <td class="prep">soak 2+ h, drain</td>
+            <td class="step" rowspan="7">blend until completely smooth<span class="t">1-2 min</span></td>
+            <td class="step" rowspan="7">cook in a pot over medium heat, stirring constantly, until glossy, thick and stretchy<span class="t">3-5 min</span></td>
+            <td class="step" rowspan="7">pour into a lightly oiled mould, chill<span class="t">2 h</span></td>
+            <td class="step" rowspan="7">slice or tear onto pizza, bake at 220-250°C<span class="t">8-12 min</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">1 cup (240 mL)</span> water</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¼ cup (30 g)</span> tapioca starch</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs. (30 mL)</span> refined coconut oil</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 Tbs. (15 mL)</span> lemon juice</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 Tbs.</span> nutritional yeast</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> salt</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Soaking</dt><dd>Soak the cashews in cold water for 2+ hours, or cover with boiling water for 10 minutes if short on time. Drain and rinse before blending.</dd></div>
+        <div><dt>Blending</dt><dd>Use a high-speed blender for 1-2 minutes. Any grit left over shows in the finished cheese.</dd></div>
+        <div><dt>Cooking</dt><dd>Stir constantly and scrape the base. The mixture goes from watery to a thick, glossy, stretchy mass quite suddenly, and it catches on the bottom of the pot if left alone.</dd></div>
+        <div><dt>When to stop</dt><dd>Stop as soon as it pulls away from the sides and stretches when lifted. Overcooking makes it rubbery.</dd></div>
+        <div><dt>Melting</dt><dd>Tear or slice thin pieces onto the pizza. It softens and bubbles, and a little browning at the edges is normal.</dd></div>
+        <div><dt>Storage</dt><dd><strong>Fridge:</strong> 5 days, airtight or wrapped in baking paper. <strong>Freezer:</strong> up to 2 months. Thaw overnight in the fridge; it is a little less stretchy afterwards. Use clean utensils, and discard if it smells sour or off, turns slimy, or shows mould or pink or grey patches.</dd></div>
+      <div><dt>Plant-based cheese tips</dt><dd><a href="#cheese-tips">Melt, flavour and storage tips</a> that apply to all the plant-based cheeses.</dd></div></dl>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="quick-pizza">
+      <header>
+        <h3>Quick 5-minute pizza cheese</h3>
+        <p class="lede">MAKES ~1 CUP · USE RIGHT AWAY ON PIZZA, TOASTIES OR PASTA BAKES</p>
+        <ul class="tags"><li>Vegan</li><li>Nut-free</li><li>Soy</li><li>No blender</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Quick pizza cheese recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Quick pizza cheese (makes about 1 cup)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1 cup (240 mL)</span> unsweetened soy milk</td>
+            <td class="prep">cold</td>
+            <td class="step" rowspan="7">whisk everything cold in a small pot</td>
+            <td class="step" rowspan="7">heat on medium, whisking, until it thickens and turns stretchy<span class="t">2-3 min</span></td>
+            <td class="step" colspan="2" rowspan="7">spread or spoon straight onto dough, bread or a pasta bake</td>
+          </tr>
+          <tr><td class="ing"><span class="q">2 Tbs.</span> tapioca starch</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs.</span> nutritional yeast</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 Tbs. (15 mL)</span> coconut oil</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> lemon juice</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">½ tsp</span> salt</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">½ tsp</span> garlic powder</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Cold start</dt><dd>Whisk the tapioca into the cold soy milk first. Added to hot liquid it clumps.</dd></div>
+        <div><dt>Heating</dt><dd>Use a small whisk and a heavy-based pot. It thickens suddenly at around 60-70°C, so keep the heat at medium.</dd></div>
+        <div><dt>When to stop</dt><dd>Take it off the heat as soon as it turns glossy and stretchy. It sets quickly as it cools.</dd></div>
+        <div><dt>Reheat</dt><dd>Whisk in a splash of soy milk over low heat. It melts further in the oven.</dd></div>
+        <div><dt>Storage</dt><dd><strong>Fridge:</strong> best within 3 days, airtight. This is the shortest-lived recipe, with no fat-rich nut base and no culture. <strong>Freezer:</strong> not recommended, because it separates and turns watery. Make it fresh each time.</dd></div>
+      <div><dt>Plant-based cheese tips</dt><dd><a href="#cheese-tips">Melt, flavour and storage tips</a> that apply to all the plant-based cheeses.</dd></div></dl>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="cheddar-block">
+      <header>
+        <h3>Sliceable cheddar block</h3>
+        <p class="lede">MAKES ONE SMALL BLOCK · GRATES, AND GOES SOFT AND BUBBLY UNDER A GRILL</p>
+        <ul class="tags"><li>Vegan</li><li>Cashew</li><li>Agar</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Cheddar block recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Cheddar block (makes one small block)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1 cup (140 g)</span> raw cashews</td>
+            <td class="prep">soak, drain</td>
+            <td class="step" rowspan="9">blend until very smooth</td>
+            <td class="step" rowspan="9">cook on medium, stirring constantly, to a gentle bubble and until it holds a ridge<span class="t">4-6 min</span></td>
+            <td class="step" rowspan="9">pour into an oiled mould, cool on the counter, then chill<span class="t">20 min + 2 h</span></td>
+            <td class="step" rowspan="9">unmould, slice or grate; grill at 200-220°C to melt<span class="t">2-4 min</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">1 cup (240 mL)</span> water</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs.</span> tapioca starch</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> agar powder</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¼ cup</span> nutritional yeast</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs. (30 mL)</span> refined coconut oil</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 Tbs. (15 mL)</span> lemon juice</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> salt</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">½ tsp</span> smoked paprika, pinch turmeric</td><td class="prep">for colour</td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>What each does</dt><dd>The agar sets the block firm for slicing. The tapioca helps it soften and stretch when heated.</dd></div>
+        <div><dt>Agar</dt><dd>Whisk the agar into the blended mixture before heating and bring it to a gentle bubble. Agar only activates after simmering for a minute or two.</dd></div>
+        <div><dt>Moulding</dt><dd>Use an oiled small bowl, ramekin or silicone mould and smooth the top. To unmould, run a knife around the edge and turn it out.</dd></div>
+        <div><dt>Melting</dt><dd>Grate or slice thinly and grill, or cover it in a pan with a lid over low heat. It won't flow quite like dairy cheddar.</dd></div>
+        <div><dt>Storage</dt><dd><strong>Fridge:</strong> 5-7 days, wrapped tightly or airtight, away from strong-smelling foods. <strong>Freezer:</strong> up to 3 months. Thaw in the fridge; slightly crumblier but still melts. Discard if slimy, off-smelling or mouldy.</dd></div>
+      <div><dt>Plant-based cheese tips</dt><dd><a href="#cheese-tips">Melt, flavour and storage tips</a> that apply to all the plant-based cheeses.</dd></div></dl>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="cultured">
+      <header>
+        <h3>Cultured, tangy "aged" cheese</h3>
+        <p class="lede">MAKES ONE WHEEL · FERMENTED FLAVOUR CLOSEST TO REAL CHEESE</p>
+        <ul class="tags"><li>Vegan</li><li>Cashew</li><li>Cultured</li><li>Soy (miso)</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Cultured cheese recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Cultured cheese (makes one wheel)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1½ cups (210 g)</span> raw cashews</td>
+            <td class="prep">soak, drain</td>
+            <td class="step" rowspan="6">blend until thick and smooth</td>
+            <td class="step" rowspan="6">ferment covered at room temperature (20-25°C) until tangy<span class="t">24-48 h</span></td>
+            <td class="step" colspan="2" rowspan="6">press into a muslin-lined mould and chill<span class="t">12-24 h</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">½ cup (120 mL)</span> water</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1</span> probiotic capsule</td><td class="prep">or 2 Tbs. rejuvelac</td></tr>
+          <tr><td class="ing"><span class="q">1 Tbs.</span> white miso</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs.</span> nutritional yeast</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> salt</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Meltable version</dt><dd>After fermenting, blend in 3 Tbs. tapioca starch (about 25 g) and 2 Tbs. (30 mL) coconut oil. Heat gently while stirring until glossy, as in the mozzarella recipe, then chill for 2 hours.</dd></div>
+        <div><dt>Clean kit</dt><dd>Use a clean jar or bowl and clean utensils, because you are encouraging live cultures to grow.</dd></div>
+        <div><dt>Fermenting</dt><dd>Press the blend into the container and cover with a clean cloth or loose lid. Taste after 24 hours and stop when it is as tangy as you like.</dd></div>
+        <div><dt>Good signs</dt><dd>It should smell pleasantly sour and look slightly puffy. Stop and discard if you see mould or pink or grey patches.</dd></div>
+        <div><dt>Storage</dt><dd><strong>Fridge:</strong> 7-10 days for the fermented version, since the acidity helps it keep. The starch-thickened meltable version keeps about 5 days. <strong>Freezer:</strong> up to 2 months, a little crumblier. Discard if it smells yeasty or unpleasant (rather than tangy), turns slimy, or grows mould.</dd></div>
+      <div><dt>Plant-based cheese tips</dt><dd><a href="#cheese-tips">Melt, flavour and storage tips</a> that apply to all the plant-based cheeses.</dd></div></dl>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+    <aside class="cheese-note" id="cheese-tips" aria-labelledby="h-cheese-tips">
+      <h3 id="h-cheese-tips">Note: plant-based cheeses</h3>
+      <p class="lede">TIPS FOR BETTER MELT AND FLAVOUR · APPLIES TO ALL FIVE CHEESE RECIPES</p>
+      <dl class="notes">
+      <div><dt>Tapioca vs potato starch</dt><dd>Tapioca gives stretch and potato starch gives a creamier melt. Mixing the two works well.</dd></div>
+      <div><dt>Fat matters</dt><dd>Refined coconut oil gives the firmest set and best melt. Olive oil gives better flavour in sauces.</dd></div>
+      <div><dt>Flavour boosters</dt><dd>Nutritional yeast, lemon juice or a little apple cider vinegar, white miso, and garlic or onion powder give the cheesy tang.</dd></div>
+      <div><dt>Cook it</dt><dd>The starch must be heated until thick to activate its stretch. Don't skip that step.</dd></div>
+      <div><dt>Storage</dt><dd>About 5 days in the fridge in an airtight container. Blocks can be frozen but get slightly crumblier.</dd></div>
+    </dl>
+      <p class="foot">The cheese recipes are based on standard plant-based cheese technique rather than looked-up sources, so treat the quantities as a starting point and adjust to taste. Metric amounts for the cheeses are approximate conversions from cups and spoons.</p>
+    </aside>
+
+  </section>
+
+  <section class="cat" id="beef" aria-labelledby="h-beef">
+    <div class="cathead">
+      <h2 id="h-beef">Beef</h2>
+      <p>Hearty beef mains cooked in one or two pans, taken from meal-kit recipe cards.</p>
+    </div>
+
+    <article class="recipe" id="korean-beef-bibimbap">
+      <header>
+        <h3>Korean beef bibimbap with pickled radish, sesame oil and spicy mayo</h3>
+        <p class="lede">SERVES 2 · 35 MIN HANDS-ON · 50 MIN OVERALL</p>
+        <ul class="tags"><li>Beef</li><li>Spice: hot</li><li>Black rice</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Korean beef bibimbap with pickled radish, sesame oil and spicy mayo recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Korean beef bibimbap (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">150 mL</span> black rice</td><td class="prep">rinse</td><td class="step">simmer in 600 mL salted water, covered, until absorbed; drain<span class="t">30-35 min</span></td><td class="step" colspan="2" rowspan="12">assemble: bed of rice, then cabbage and edamame, beef, drained pickled radish and the optional fried egg</td><td class="step" rowspan="12">drizzle with spicy mayo, scatter coriander, onion greens and sesame seeds</td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> radish</td><td class="prep">thinly sliced</td><td class="step" rowspan="2">pickle: toss the radish with the vinegar, 20 mL water and 10 mL sweetener</td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> rice wine vinegar</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">100 mL</span> Kewpie mayo</td><td class="prep"></td><td class="step" rowspan="2">spicy mayo: mix, loosen with water to a drizzle</td></tr>
+          <tr><td class="ing"><span class="q">10 mL</span> gochujang</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">10 mL</span> white sesame seeds</td><td class="prep"></td><td class="step">toast in a dry pan until golden<span class="t">2-3 min</span></td></tr>
+          <tr><td class="ing"><span class="q">300 g</span> beef rump strips</td><td class="prep">pat dry</td><td class="step">sear in a hot oiled pan, season<span class="t">20-30 sec</span></td></tr>
+          <tr><td class="ing"><span class="q">200 g</span> cabbage</td><td class="prep">thinly sliced</td><td class="step" rowspan="2">fry the cabbage and onion whites<span class="t">1-2 min</span></td></tr>
+          <tr><td class="ing"><span class="q">2</span> spring onions</td><td class="prep">whites and greens apart, sliced</td></tr>
+          <tr><td class="ing"><span class="q">15 mL</span> sesame oil</td><td class="prep"></td><td class="step" rowspan="2">toss through at the end, season</td></tr>
+          <tr><td class="ing"><span class="q">100 g</span> edamame beans</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh coriander</td><td class="prep">rinse, pick</td><td class="step blank"></td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Optional egg</dt><dd>Fry 2 eggs in oil until the white is cooked and the yolk still runny, then drain the radish pickle liquid before topping.</dd></div><div><dt>Allergens</dt><dd>Sulphites, egg, gluten, sesame, sugar alcohol (sweetener), wheat, soya, allium.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="spicy-beef-vindaloo">
+      <header>
+        <h3>Spicy beef vindaloo with poppadoms, tzatziki and cashew nuts</h3>
+        <p class="lede">SERVES 2 · 20 MIN HANDS-ON · 30 MIN OVERALL</p>
+        <ul class="tags"><li>Beef</li><li>Spice: moderate</li><li>Curry</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Spicy beef vindaloo with poppadoms, tzatziki and cashew nuts recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Spicy beef vindaloo (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">20 g</span> cashew nuts</td><td class="prep">roughly chop</td><td class="step">toast in a dry pot until golden<span class="t">2-4 min</span></td><td class="step blank" rowspan="2"></td><td class="step blank"></td><td class="step" rowspan="12">serve in a bowl with a dollop of tzatziki, sambal and poppadoms on the side, cashews scattered over</td></tr>
+          <tr><td class="ing"><span class="q">300 g</span> beef schnitzel</td><td class="prep">without crumb</td><td class="step">sear in a very hot oiled pot, cut into bite-sized pieces, season<span class="t">20-30 sec</span></td><td class="step" rowspan="8">add passata and 300 mL water, boil, then simmer until reduced; return the beef and a sweetener for the last 1-2 min, season<span class="t">10-15 min</span></td></tr>
+          <tr><td class="ing"><span class="q">240 g</span> carrot</td><td class="prep">half finely diced, half roughly grated</td><td class="step blank" rowspan="7"></td><td class="step" rowspan="6">fry the diced carrot and onion until soft; add the spice, paste, garlic and chilli until fragrant<span class="t">4-5 min + 1-2 min</span></td></tr>
+          <tr><td class="ing"><span class="q">1</span> onion</td><td class="prep">roughly diced</td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> vindaloo spice</td><td class="prep">1 bay leaf + 20 mL NOMU Garam Masala Rub</td></tr>
+          <tr><td class="ing"><span class="q">40 mL</span> Durban curry paste</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1</span> garlic clove</td><td class="prep">grated</td></tr>
+          <tr><td class="ing"><span class="q">1</span> fresh chilli</td><td class="prep">deseeded, chopped</td></tr>
+          <tr><td class="ing"><span class="q">200 mL</span> tomato passata</td><td class="prep"></td><td class="step blank" rowspan="4"></td></tr>
+          <tr><td class="ing"><span class="q">1</span> tomato</td><td class="prep">diced</td><td class="step">sambal: mix with the grated carrot and a drizzle of olive oil, season</td><td class="step blank" rowspan="3"></td></tr>
+          <tr><td class="ing"><span class="q">4</span> poppadoms</td><td class="prep"></td><td class="step">shallow fry 30 sec per side, flattening, until golden and puffed (or air fry at 180°C, 3-4 min)</td></tr>
+          <tr><td class="ing"><span class="q">100 mL</span> tzatziki</td><td class="prep"></td><td class="step blank"></td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Allergens</dt><dd>Sulphites, tree nuts, cow's milk, allium.</dd></div><div><dt>Sweetener</dt><dd>Sugar, sweetener or honey from your kitchen.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="beef-rump-gratin">
+      <header>
+        <h3>Beef rump and potato au gratin with cucumber ribbon salad</h3>
+        <p class="lede">SERVES 2 · 30 MIN HANDS-ON · 45 MIN OVERALL</p>
+        <ul class="tags"><li>Beef</li><li>Spice: none</li><li>Oven</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Beef rump and potato au gratin with cucumber ribbon salad recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Beef rump and potato au gratin (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">1</span> onion</td><td class="prep">peeled, roughly sliced</td><td class="step">caramelise in oil and a knob of butter, adding sweetener halfway<span class="t">8-10 min</span></td><td class="step" rowspan="6">stir in half the cheese and season; fold in the potato and caramelised onion; loosen with water or milk if thick</td><td class="step" rowspan="6">spread in a greased dish, top with the rest of the cheese, roast at 200°C until the potato is soft; grill for the last 5 min<span class="t">25-30 min</span></td><td class="step" rowspan="11">plate the sliced beef with the gratin and the salad on the side</td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> cake flour</td><td class="prep"></td><td class="step" rowspan="3">melt 20 g butter, whisk in the flour, then slowly whisk in the milk and garlic<span class="t">1-2 min + thicken</span></td></tr>
+          <tr><td class="ing"><span class="q">200 mL</span> low-fat UHT milk</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1</span> garlic clove</td><td class="prep">grated</td></tr>
+          <tr><td class="ing"><span class="q">60 g</span> grated cheddar</td><td class="prep"></td><td class="step blank" rowspan="2"></td></tr>
+          <tr><td class="ing"><span class="q">400 g</span> potato</td><td class="prep">peeled, thinly sliced into rounds</td></tr>
+          <tr><td class="ing"><span class="q">200 g</span> cucumber</td><td class="prep">peeled into ribbons</td><td class="step" rowspan="3">toss the cucumber with the lemon juice, olives and a drizzle of olive oil, season</td><td class="step blank" rowspan="5"></td><td class="step blank" rowspan="5"></td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> lemon juice</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> pitted green olives</td><td class="prep">drained, roughly chopped</td></tr>
+          <tr><td class="ing"><span class="q">320 g</span> beef rump</td><td class="prep">pat dry</td><td class="step" rowspan="2">sear fat-side down until crisp, flip; in the last minute baste with butter and thyme; rest, then slice<span class="t">3-5 min + 2-4 min per side; rest 5 min</span></td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh thyme</td><td class="prep">rinse</td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Doneness</dt><dd>Times given are for medium-rare.</dd></div><div><dt>Allergens</dt><dd>Sulphites, gluten, wheat, cow's milk, allium. Butter, milk (optional) and sweetener from your kitchen.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="pork" aria-labelledby="h-pork">
+    <div class="cathead">
+      <h2 id="h-pork">Pork</h2>
+      <p>Pork mains, taken from meal-kit recipe cards.</p>
+    </div>
+
+    <article class="recipe" id="peach-paprika-kassler">
+      <header>
+        <h3>Peach and paprika kassler with roasted potatoes</h3>
+        <p class="lede">SERVES 2 · 25 MIN HANDS-ON · 40 MIN OVERALL</p>
+        <ul class="tags"><li>Pork</li><li>Spice: none</li><li>Tinned peaches</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Peach and paprika kassler with roasted potatoes recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Peach and paprika kassler (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">400 g</span> potato</td><td class="prep">rinse, cut into bite-sized pieces</td><td class="step" rowspan="2">coat in oil, spread on a tray, season, roast at 200°C until golden, shifting halfway<span class="t">25-30 min</span></td><td class="step blank" rowspan="3"></td><td class="step" colspan="2" rowspan="9">plate the roast potatoes with the kassler and beans; scatter the almonds over the beans</td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> NOMU Does Everything</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> almonds</td><td class="prep"></td><td class="step">toast in a dry pan until golden<span class="t">2-4 min</span></td></tr>
+          <tr><td class="ing"><span class="q">360 g</span> pork kassler steak</td><td class="prep">pat dry</td><td class="step" rowspan="3">score the fat, coat with mustard and paprika, sear fat-side down until crisp<span class="t">3-5 min</span></td><td class="step" rowspan="4">flip and sear; add the peaches and a splash of their liquid; fry until caramelised and sticky<span class="t">1-2 min per side, then 3-5 min</span></td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> Dijon mustard</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">10 mL</span> smoked paprika</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">200 g</span> tinned peach halves</td><td class="prep">drain, keep the liquid, cut into wedges</td><td class="step blank"></td></tr>
+          <tr><td class="ing"><span class="q">160 g</span> green beans</td><td class="prep"></td><td class="step" rowspan="2">fry the beans until they start to char; add a knob of butter and the sage until crisp<span class="t">4-5 min + 1-2 min</span></td><td class="step blank" rowspan="2"></td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh sage</td><td class="prep">rinse, pick, dry</td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Air fryer</dt><dd>Potatoes can be air fried at 200°C until crisp, 20-25 minutes.</dd></div><div><dt>Allergens</dt><dd>Sulphites, tree nuts, cow's milk. Butter comes from your kitchen.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="chicken" aria-labelledby="h-chicken">
+    <div class="cathead">
+      <h2 id="h-chicken">Chicken</h2>
+      <p>Chicken mains, from crumbed tortillas to a creamy polenta.</p>
+    </div>
+
+    <article class="recipe" id="chicken-kiev-meatballs">
+      <header>
+        <h3>Chicken kiev meatballs and broccoli with almonds, sun-dried tomatoes and feta</h3>
+        <p class="lede">SERVES 2 · 40 MIN HANDS-ON · 45 MIN OVERALL</p>
+        <ul class="tags"><li>Chicken</li><li>Spice: none</li><li>Oven + pan</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Chicken kiev meatballs and broccoli with almonds, sun-dried tomatoes and feta recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Chicken kiev meatballs (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">480 g</span> carrot</td><td class="prep">peeled, cut into bite-sized diagonal pieces</td><td class="step">coat in oil, season, roast at 200°C until golden, shifting halfway<span class="t">25-30 min</span></td><td class="step blank"></td><td class="step blank"></td><td class="step" rowspan="13">plate the warm salad, scatter the feta, serve with the broccoli and meatballs; nuts over the salad</td></tr>
+          <tr><td class="ing"><span class="q">60 mL</span> grated Italian-style hard cheese</td><td class="prep"></td><td class="step" rowspan="3">mix into a herby butter</td><td class="step" rowspan="5">shape 6-8 patties, enclose 1-2 tsp herby butter in each, roll smooth</td><td class="step" rowspan="6">coat in whisked egg, then panko; fry in oil until golden and cooked through, turning<span class="t">3-4 min</span></td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh parsley</td><td class="prep">rinse, pick, finely chop</td></tr>
+          <tr><td class="ing"><span class="q">60 g</span> butter</td><td class="prep">soft</td></tr>
+          <tr><td class="ing"><span class="q">300 g</span> free-range chicken mince</td><td class="prep"></td><td class="step" rowspan="2">mix the mince with the rub and seasoning</td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> NOMU Italian rub</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">160 mL</span> panko breadcrumbs</td><td class="prep"></td><td class="step blank"></td><td class="step blank" rowspan="7"></td></tr>
+          <tr><td class="ing"><span class="q">230 g</span> long-stem broccoli</td><td class="prep">rinse</td><td class="step">fry until lightly charred<span class="t">5-6 min</span></td><td class="step blank" rowspan="6"></td></tr>
+          <tr><td class="ing"><span class="q">20 g</span> almonds</td><td class="prep">roughly chop</td><td class="step">toast in a dry pan until golden<span class="t">2-4 min</span></td></tr>
+          <tr><td class="ing"><span class="q">40 mL</span> red wine vinegar</td><td class="prep"></td><td class="step" rowspan="3">whisk the vinegar with a drizzle of olive oil and seasoning; toss with the leaves, tomatoes and roasted carrots</td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> green leaves</td><td class="prep">rinse</td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> sun-dried tomatoes</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">60 g</span> Danish-style feta</td><td class="prep">drain</td><td class="step blank"></td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Handling</dt><dd>Wet your hands to stop the mince sticking, and push the filling in gently so it does not escape.</dd></div><div><dt>Air fryer</dt><dd>Carrots can be air fried at 200°C until crisp, 20-25 minutes.</dd></div><div><dt>Allergens</dt><dd>Sulphites, egg, gluten, tree nuts, wheat, cow's milk, allium. Egg and butter from your kitchen.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="tropical-balsamic-tortilla">
+      <header>
+        <h3>Tropical balsamic and chicken tortilla with charred pineapple</h3>
+        <p class="lede">SERVES 2 · 20 MIN HANDS-ON · 20 MIN OVERALL</p>
+        <ul class="tags"><li>Chicken</li><li>Spice: none</li><li>Whipped goat's cheese</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Tropical balsamic and chicken tortilla with charred pineapple recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Tropical balsamic and chicken tortilla (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">1</span> onion</td><td class="prep">peeled, roughly sliced</td><td class="step">fry in oil and butter until soft and lightly golden<span class="t">5-6 min</span></td><td class="step" colspan="3" rowspan="9">top the crisp tortillas with the whipped goat's cheese, leaves, onion, chicken and pineapple; drizzle with balsamic and scatter mint</td></tr>
+          <tr><td class="ing"><span class="q">160 g</span> fresh pineapple chunks</td><td class="prep">diced into small chunks</td><td class="step">fry in a hot pan until lightly charred<span class="t">1-2 min</span></td></tr>
+          <tr><td class="ing"><span class="q">2</span> crumbed chicken breasts</td><td class="prep"></td><td class="step">fry until browned, drain, season, cut into chunks<span class="t">1-2 min per side</span></td></tr>
+          <tr><td class="ing"><span class="q">2</span> wheat flour tortillas</td><td class="prep"></td><td class="step">fry until golden and crisp, drain, sprinkle with salt<span class="t">30-60 sec per side</span></td></tr>
+          <tr><td class="ing"><span class="q">50 g</span> Chevin goat's cheese</td><td class="prep"></td><td class="step" rowspan="2">whisk until combined</td></tr>
+          <tr><td class="ing"><span class="q">60 mL</span> sour cream</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> green leaves</td><td class="prep">rinse, shred</td><td class="step blank" rowspan="3"></td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> balsamic reduction</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh mint</td><td class="prep">rinse, finely chop</td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Chef's tip</dt><dd>Cut into pizza-style slices, or enjoy with a knife and fork.</dd></div><div><dt>Air fryer</dt><dd>Crumbed chicken can be air fried at 200°C until crisp and warmed through, 3-5 minutes.</dd></div><div><dt>Allergens</dt><dd>Sulphites, egg, gluten, wheat, cow's milk, allium.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="red-pesto-polenta-chicken">
+      <header>
+        <h3>Red pesto polenta and creamy chicken with a Cajun sauce, corn and pine nut salsa</h3>
+        <p class="lede">SERVES 2 · 20 MIN HANDS-ON · 40 MIN OVERALL</p>
+        <ul class="tags"><li>Chicken</li><li>Spice: hot</li><li>Polenta</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Red pesto polenta and creamy chicken with a Cajun sauce, corn and pine nut salsa recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Red pesto polenta and creamy Cajun chicken (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">20 g</span> pine nuts</td><td class="prep"></td><td class="step" rowspan="4">salsa: toast the nuts 3-5 min and chop; mix with half the parsley and garlic, lemon zest and juice, olive oil, seasoning; chill</td><td class="step blank" rowspan="4"></td><td class="step" colspan="2" rowspan="12">plate the polenta, top with chicken and Cajun sauce, scatter the salsa, garnish with parsley and lemon wedges</td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh parsley</td><td class="prep">rinse, pick, finely chop</td></tr>
+          <tr><td class="ing"><span class="q">1</span> garlic clove</td><td class="prep">peeled, grated</td></tr>
+          <tr><td class="ing"><span class="q">1</span> lemon</td><td class="prep">zest, then cut into wedges</td></tr>
+          <tr><td class="ing"><span class="q">2</span> free-range chicken breasts</td><td class="prep">pat dry</td><td class="step">butterfly the breast, season, fry until golden and cooked through<span class="t">1-2 min per side</span></td><td class="step" rowspan="5">sauce: fry peppers and corn until golden; add the remaining garlic, then cream and Cajun stock; simmer; return the chicken with lemon, parsley and seasoning; cover<span class="t">3-4 min + 2-3 min</span></td></tr>
+          <tr><td class="ing"><span class="q">40 g</span> piquanté peppers</td><td class="prep">drain</td><td class="step blank" rowspan="4"></td></tr>
+          <tr><td class="ing"><span class="q">100 g</span> corn</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">200 mL</span> fresh cream</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">40 mL</span> Cajun stock</td><td class="prep">20 mL NOMU rub + 10 mL paprika + 10 mL chicken stock</td></tr>
+          <tr><td class="ing"><span class="q">150 mL</span> polenta</td><td class="prep"></td><td class="step" rowspan="3">boil 700 mL water, whisk in the polenta, cook until soft and creamy; off the heat stir in butter, cheese and pesto<span class="t">5-8 min</span></td><td class="step blank" rowspan="3"></td></tr>
+          <tr><td class="ing"><span class="q">40 mL</span> grated Italian-style hard cheese</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">80 mL</span> red pepper pesto</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Polenta</dt><dd>If it gets too thick, loosen it with a splash of warm water.</dd></div><div><dt>Allergens</dt><dd>Sulphites, egg, tree nuts, cow's milk, allium. Butter, sweetener and seasoning from your kitchen.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="fish" aria-labelledby="h-fish">
+    <div class="cathead">
+      <h2 id="h-fish">Fish</h2>
+      <p>Fish mains cooked in one pan.</p>
+    </div>
+
+    <article class="recipe" id="rainbow-trout-lemon-chilli">
+      <header>
+        <h3>Rainbow trout and lemon-chilli dressing with charred baby tomatoes</h3>
+        <p class="lede">SERVES 2 · 25 MIN HANDS-ON · 35 MIN OVERALL</p>
+        <ul class="tags"><li>Fish</li><li>Spice: hot</li><li>Bulgur wheat</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Rainbow trout and lemon-chilli dressing with charred baby tomatoes recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Rainbow trout and lemon-chilli dressing (serves 2)</th></tr>
+          <tr><td class="ing"><span class="q">100 mL</span> bulgur wheat</td><td class="prep"></td><td class="step">simmer in 300 mL boiling water with a drizzle of oil and seasoning; drain, fluff<span class="t">6-8 min</span></td><td class="step" colspan="3" rowspan="10">toss the onion and garlic, tomatoes and salad leaves through the bulgur; top with the trout and drizzle over the dressing</td></tr>
+          <tr><td class="ing"><span class="q">160 g</span> baby tomatoes</td><td class="prep">rinse</td><td class="step">blister in an oiled pan, keep the pan juices, season<span class="t">6-8 min</span></td></tr>
+          <tr><td class="ing"><span class="q">1</span> onion</td><td class="prep">peeled, finely sliced</td><td class="step" rowspan="2">fry the onion until golden; add the garlic for the last 1-2 min<span class="t">4-5 min</span></td></tr>
+          <tr><td class="ing"><span class="q">1</span> garlic clove</td><td class="prep">peeled, grated</td></tr>
+          <tr><td class="ing"><span class="q">20 mL</span> lemon juice</td><td class="prep"></td><td class="step" rowspan="4">combine the lemon juice, dill, capers and chilli for the dressing; season</td></tr>
+          <tr><td class="ing"><span class="q">5 g</span> fresh dill</td><td class="prep">rinse, pick, chop</td></tr>
+          <tr><td class="ing"><span class="q">20 g</span> capers</td><td class="prep">drain, chop</td></tr>
+          <tr><td class="ing"><span class="q">1</span> fresh chilli</td><td class="prep">deseeded, finely sliced</td></tr>
+          <tr><td class="ing"><span class="q">2</span> rainbow trout fillets</td><td class="prep">pat dry</td><td class="step">fry skin-side down until crisp, flip, 30-60 sec more; season<span class="t">2-3 min</span></td></tr>
+          <tr><td class="ing"><span class="q">80 g</span> salad leaves</td><td class="prep">rinse, shred</td><td class="step blank"></td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Allergens</dt><dd>Sulphites, fish, gluten, wheat, allium.</dd></div><div><dt>Pan</dt><dd>A little cooking spray or oil is enough; use the same pan for tomatoes, onion and trout.</dd></div></dl>
+      <p class="foot">Amounts are the Serves 2 amounts from the card, which also lists Serves 1 amounts. Steps are condensed from the card. Oil, seasoning, water and paper towel come from your kitchen.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="breads" aria-labelledby="h-breads">
+    <div class="cathead">
+      <h2 id="h-breads">Breads</h2>
+      <p>Simple breads made with a few pantry ingredients, to serve alongside a main dish.</p>
+    </div>
+
+    <article class="recipe" id="indian-roti">
+      <header>
+        <h3>Indian roti with all-purpose flour</h3>
+        <p class="lede">MAKES 3 ROTI · INDIAN FLAT BREAD · SERVE HOT</p>
+        <ul class="tags"><li>Vegan</li><li>Flatbread</li><li>Pan-cooked</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Indian roti recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Indian roti (makes 3)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">2 cups (250 g)</span> all-purpose flour</td>
+            <td class="prep">also called maida</td>
+            <td class="step" rowspan="2">mix together</td>
+            <td class="step" rowspan="4">add salt, then water slowly, and knead until the dough is soft</td>
+            <td class="step" rowspan="4">shape into 3 small balls, set aside<span class="t">20-30 min</span></td>
+            <td class="step" rowspan="4">roll thin on a floured board, cook both sides in a non-stick pan on medium heat</td>
+          </tr>
+          <tr><td class="ing"><span class="q">2 tsp</span> cooking oil</td><td class="prep">or butter</td></tr>
+          <tr>
+            <td class="ing"><span class="q">¾ tsp</span> salt</td><td class="prep">or to taste</td>
+            <td class="step blank" rowspan="2"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">as needed</span> water</td><td class="prep">add slowly</td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Dough</dt><dd>Work the oil into the flour first, then add the salt. Add the water a little at a time so the dough stays soft rather than sticky.</dd></div>
+        <div><dt>Rolling</dt><dd>Dust the board with flour and roll each ball into a thin circle.</dd></div>
+        <div><dt>Serving</dt><dd>Serve hot with any curry. It goes well with a Sri Lankan style dhal curry.</dd></div>
+      </dl>
+      <p class="foot">The measure of water and the cooking time per side are not given in the original, so both are left to feel. Flour weight is an approximate conversion from cups.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="eggs-quick" aria-labelledby="h-eggs-quick">
+    <div class="cathead">
+      <h2 id="h-eggs-quick">Eggs &amp; Quick Meals</h2>
+      <p>Fast single-serve dishes that need little equipment, from a camping-style quiche to a pan-cooked quesadilla.</p>
+    </div>
+
+    <article class="recipe" id="tin-mug-quiche">
+      <header>
+        <h3>Quiche in a tin mug</h3>
+        <p class="lede">SERVES 1 · ABOUT 10 MIN · ORIGINAL: "QUICHE IN 'N BLIKBEKER"</p>
+        <ul class="tags"><li>Eggs</li><li>Single serve</li><li>Gas stove</li><li>Endless variations</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Tin mug quiche recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Quiche in a tin mug (serves 1)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">a little</span> butter or margarine</td>
+            <td class="prep">for the mug</td>
+            <td class="step">grease the mug thoroughly so the quiche slips out</td>
+            <td class="step" rowspan="5">pour into the mug and stand it in the boiling water, about halfway up its side</td>
+            <td class="step" rowspan="5">lid on the pot, cook until the egg is set<span class="t">about 10 min</span></td>
+            <td class="step" rowspan="5">loosen with a knife, put a plate over the mug and flip it out</td>
+          </tr>
+          <tr>
+            <td class="ing"><span class="q">2</span> eggs</td><td class="prep"></td>
+            <td class="step" rowspan="3">whisk together</td>
+          </tr>
+          <tr><td class="ing"><span class="q">¼ cup (60 mL)</span> milk</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">to taste</span> salt and pepper</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">to taste</span> extras</td>
+            <td class="prep">bacon bits, sliced sausage</td>
+            <td class="step">stir in</td>
+          </tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Set up first</dt><dd>Put a large pot of water on a gas stove and bring it to the boil. Check that all the mugs fit in the pot and stand about halfway in the water.</dd></div>
+        <div><dt>Extras</dt><dd>Use any fillings you like: cooked bacon bits, sliced sausages, sliced asparagus, ham, tomato, salmon, even vegetables.</dd></div>
+        <div><dt>Loosen as it cooks</dt><dd>Slide a knife down the side of the mug a few times. Press gently on the quiche with the back of a spoon so some of the raw egg in the middle runs to the edges. Don't be rough, or the quiche breaks.</dd></div>
+        <div><dt>Turning out</dt><dd>Run the knife round the quiche again when you lift the mug out, then flip it onto a plate.</dd></div>
+        <div><dt>Serving</dt><dd>Serve with toast and grated cheese. Or eat it straight from the mug and save on dishes.</dd></div>
+      </dl>
+      <p class="foot">Translated from Afrikaans. The original instructions are written in a playful style, and the steps here are shortened. Metric amount converted from the cup measure.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="bbq-quesadilla">
+      <header>
+        <h3>BBQ chicken and pineapple quesadilla</h3>
+        <p class="lede">MAKES 1 SERVING · 5 MIN PREP · 10 MIN COOK · 15 MIN TOTAL</p>
+        <ul class="tags"><li>Chicken</li><li>Spicy</li><li>Pan-cooked</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="BBQ chicken and pineapple quesadilla recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">BBQ chicken and pineapple quesadilla (1 serving)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1</span> tortilla</td>
+            <td class="prep">10 in (25 cm)</td>
+            <td class="step" rowspan="8">place in a pan on medium heat; on half of it layer half the cheese, then the chicken, BBQ sauce, pineapple, jalapeno and cilantro, then the remaining cheese</td>
+            <td class="step" rowspan="8">fold the tortilla in half over the filling</td>
+            <td class="step" colspan="2" rowspan="8">cook until golden brown and the cheese is melted<span class="t">2-4 min per side</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">¼ cup</span> cheddar</td><td class="prep">shredded</td></tr>
+          <tr><td class="ing"><span class="q">¼ cup</span> jack cheese</td><td class="prep">shredded</td></tr>
+          <tr><td class="ing"><span class="q">¼ cup</span> chicken</td><td class="prep">cooked, shredded or small pieces, warm</td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs.</span> BBQ sauce</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¼ cup</span> pineapple</td><td class="prep">sliced, optionally grilled</td></tr>
+          <tr><td class="ing"><span class="q">1</span> jalapeno</td><td class="prep">sliced</td></tr>
+          <tr><td class="ing"><span class="q">to taste</span> cilantro</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Set up first</dt><dd>Heat the pan over medium heat before the tortilla goes in.</dd></div>
+        <div><dt>Layering</dt><dd>Sprinkle half the cheese over half the tortilla first. Keeping the filling on one half makes it easy to fold.</dd></div>
+        <div><dt>Flavour</dt><dd>Sweet and spicy BBQ chicken with juicy, tangy pineapple, jalapeno heat and plenty of melted cheese.</dd></div>
+      </dl>
+      <p class="foot">Amounts are for one serving, so multiply for more and cook each quesadilla separately.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="breakfast" aria-labelledby="h-breakfast">
+    <div class="cathead">
+      <h2 id="h-breakfast">Breakfast</h2>
+      <p>Something sweet for the morning.</p>
+    </div>
+
+    <article class="recipe" id="eggless-waffles">
+      <header>
+        <h3>Eggless vanilla waffles with chocolate sauce</h3>
+        <p class="lede">SERVES 8 · 15 MIN PREP · 5 MIN COOK · ABOUT 209 KCAL EACH</p>
+        <ul class="tags"><li>Egg-free</li><li>Vegan with oil and plant milk</li><li>Waffle maker</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Eggless waffles recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Eggless vanilla waffles (serves 8)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1½ cups (190 g)</span> all-purpose flour</td>
+            <td class="prep"></td>
+            <td class="step" rowspan="3">sift together in a bowl</td>
+            <td class="step" rowspan="8">make a well in the dry mix, pour in the liquid slowly, whisk until smooth and lump free</td>
+            <td class="step" rowspan="8">pour into the hot waffle iron, spread to fill the cavities, cook as the maker directs</td>
+            <td class="step" rowspan="10">serve warm with the sauce and toppings</td>
+          </tr>
+          <tr><td class="ing"><span class="q">3 tsp</span> baking powder</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">¼ tsp</span> salt</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">2 Tbs.</span> granulated sugar</td><td class="prep"></td>
+            <td class="step" rowspan="5">whisk together in another bowl</td>
+          </tr>
+          <tr><td class="ing"><span class="q">1½ cups + 2 Tbs. (390 mL)</span> milk</td><td class="prep">milk of choice</td></tr>
+          <tr><td class="ing"><span class="q">2 tsp</span> vinegar</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> vanilla extract</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">6 Tbs. (90 mL)</span> butter or oil</td><td class="prep">melted</td></tr>
+          <tr>
+            <td class="ing"><span class="q">¼ cup</span> chocolate chips</td><td class="prep">vegan, or baker's chocolate</td>
+            <td class="step" rowspan="2">microwave in 10-second bursts, stirring, until smooth, then set aside<span class="t">30-40 sec</span></td>
+            <td class="step blank" colspan="2" rowspan="2"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">⅓ cup (80 mL)</span> full-fat coconut milk</td><td class="prep"></td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Order of work</dt><dd>The original starts with the chocolate sauce. Make it first and set it aside, then preheat the waffle maker following its instructions.</dd></div>
+        <div><dt>Batter</dt><dd>It should pour easily and be thinner than a cake batter.</dd></div>
+        <div><dt>Toppings</dt><dd>Optional: whipped cream and chopped fruit of your choice.</dd></div>
+        <div><dt>Storage</dt><dd>The waffles can be frozen for later use.</dd></div>
+      </dl>
+      <p class="foot">The original refers to notes for the milk and the coconut milk, which were not included, so use any plant milk and the thick full-fat coconut milk. The original's sauce method says "cream", which here is the coconut milk. Cup measures converted approximately to metric.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+  <section class="cat" id="sweets" aria-labelledby="h-sweets">
+    <div class="cathead">
+      <h2 id="h-sweets">Sweets</h2>
+      <p>Desserts, from puddings in tin cups to a tart baked over the coals.</p>
+    </div>
+
+    <article class="recipe" id="malva-koppie">
+      <header>
+        <h3>Malva koppie pudding</h3>
+        <p class="lede">SERVES 4 · ABOUT 30 MIN OVER COALS + 5 MIN TO SOAK · AMARULA SAUCE</p>
+        <ul class="tags"><li>Eggs</li><li>Braai</li><li>Potjie</li><li>Amarula</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Malva koppie pudding recipe table, scrolls sideways on narrow screens">
+        <table class="recipe">
+          <colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Malva koppie pudding (serves 4)</th></tr>
+          <tr>
+            <td class="ing"><span class="q">1</span> large egg</td>
+            <td class="prep"></td>
+            <td class="step" rowspan="2">beat together</td>
+            <td class="step" rowspan="5">keep whisking while a helper adds these</td>
+            <td class="step" rowspan="8">add last, then beat until thoroughly mixed</td>
+            <td class="step" rowspan="9">pour into tin cups on a leaf, ¾ full; stand on a wire rack in a flat-bottomed potjie, lid on, a few coals on top, bake over medium coals until risen and golden<span class="t">about 30 min</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">½ cup (100 g)</span> sugar</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">2 Tbs.</span> apricot jam</td><td class="prep"></td>
+            <td class="step blank" rowspan="7"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">1 pinch</span> salt</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 cup (120 g)</span> cake flour</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">1 cup (250 mL)</span> milk</td><td class="prep"></td>
+            <td class="step blank" rowspan="4"></td>
+          </tr>
+          <tr><td class="ing"><span class="q">1 Tbs.</span> vinegar</td><td class="prep">a splash</td></tr>
+          <tr><td class="ing"><span class="q">5 mL (1 tsp)</span> bicarbonate of soda</td><td class="prep"></td></tr>
+          <tr>
+            <td class="ing"><span class="q">1 handful</span> geranium leaves</td><td class="prep">1 per cup</td>
+            <td class="step blank"></td>
+          </tr>
+          <tr>
+            <td class="ing"><span class="q">¼ cup (60 g)</span> butter</td><td class="prep">sauce</td>
+            <td class="step" colspan="3" rowspan="3">cook together in a saucepan just before the pudding is done<span class="t">a couple of min</span></td>
+            <td class="step" rowspan="3">pour over the pudding, return to the heat so the sauce sinks in<span class="t">5 min</span></td>
+          </tr>
+          <tr><td class="ing"><span class="q">¾ cup (150 g)</span> sugar</td><td class="prep">sauce</td></tr>
+          <tr><td class="ing"><span class="q">½ cup (125 mL)</span> Amarula cream liqueur</td><td class="prep">sauce</td></tr>
+        </table>
+      </div>
+      <dl class="notes">
+        <div><dt>Cups</dt><dd>Use as many tin cups as you have guests. Put a geranium leaf at the bottom of each, and fill each about ¾ full to leave room to rise.</dd></div>
+        <div><dt>Potjie setup</dt><dd>Stand the cups on a round wire rack inside the pot. This keeps the bottoms from burning.</dd></div>
+        <div><dt>Doneness</dt><dd>The pudding should have risen and be golden and fluffy.</dd></div>
+      </dl>
+      <p class="foot">Recipe as cooked by Die Skilpadjies on Ultimate Braai Master Season 2, from a camping site recipe page. The method mentions baking powder, but the ingredient list has none, so it is left out here. The method also calls for a tiny splash of vinegar while the list gives 1 Tbs., so adjust to taste. Cup amounts converted approximately to metric using 250 mL cups.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+
+    <article class="recipe" id="appeltert-potjie">
+      <header>
+        <h3>Apple tart in a potjie</h3>
+        <p class="lede">SERVES 6-8 · 10 MIN ON THE FIRE, THEN 45-60 MIN ON COALS · ORIGINAL: "APPELTERT IN 'N POTJIE"</p>
+        <ul class="tags"><li>Potjie</li><li>Brandy or rum</li><li>Crumble top</li></ul>
+      </header>
+      <div class="scroll" tabindex="0" role="region" aria-label="Apple tart in a potjie recipe table, scrolls sideways on narrow screens">
+        <table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"><col style="width: 100px"></colgroup>
+          <tr><th class="title" colspan="6">Apple tart in a potjie (serves 6 to 8)</th></tr>
+          <tr><td class="ing"><span class="q">8-10</span> Granny Smith apples</td><td class="prep">peeled, cut off the cores</td><td class="step" rowspan="5">put the apples, water, raisins, cinnamon and brandy in the potjie, mix, lid on, cook over the fire until the apple softens<span class="t">10 min</span></td><td class="step" rowspan="8">stir half the crumble through the cooked apple mixture</td><td class="step" rowspan="10">spread the rest of the crumble on top, dot with butter, sprinkle with cinnamon, lid on, return to the fire</td><td class="step" rowspan="11">bake on gentle coals with coals on the lid, topping up and turning the pot, until the apple sauce bubbles through the crust; serve with ice cream or cream<span class="t">45-60 min</span></td></tr>
+          <tr><td class="ing"><span class="q">½ cup (125 mL)</span> water</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">½ cup (75 g)</span> raisins</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1 tsp</span> cinnamon</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 tots</span> brandy or rum</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">1½ cups (190 g)</span> cake flour</td><td class="prep"></td><td class="step" rowspan="3">rub together with your fingertips until dry and crumbly</td></tr>
+          <tr><td class="ing"><span class="q">1½ cups (270 g)</span> brown sugar</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">125 g</span> salted butter</td><td class="prep"></td></tr>
+          <tr><td class="ing"><span class="q">2 Tbs.</span> extra butter</td><td class="prep">to dot on top</td><td class="step blank" rowspan="3"></td><td class="step blank" rowspan="3"></td></tr>
+          <tr><td class="ing"><span class="q">a little</span> more cinnamon</td><td class="prep">for colour</td></tr>
+          <tr><td class="ing"><span class="q">to serve</span> vanilla ice cream or cream</td><td class="prep"></td><td class="step blank"></td></tr>
+        </table>
+      </div>
+      <dl class="notes"><div><dt>Coals</dt><dd>Put the potjie on gentle coals with a few on the lid. When they cool, add more underneath and on the lid. If the fire is big and one side gets hotter, turn the pot now and then.</dd></div><div><dt>Doneness</dt><dd>The tart is ready when you can see the apple sauce bubbling through the crust as you lift the lid.</dd></div><div><dt>Serving</dt><dd>Serve with vanilla ice cream or cream.</dd></div><div><dt>Too sweet</dt><dd>The sugar in the original is too much. Reduce it by half, to ¾ cup (about 135 g) brown sugar in the crumble.</dd></div></dl>
+      <p class="foot">Translated from Afrikaans. Cup amounts converted approximately to metric using 250 mL cups; a 'tot' is a tot of spirit.</p>
+      <a class="top" href="#top">Back to top</a>
+    </article>
+  </section>
+
+</main>
+<script>
+// Quantity parsing, scaling and shopping-list maths. Pure functions; tested by test_logic.js.
+var RB = (function () {
+  var FR = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125 };
+  // A number token: "1 1/2", "1½", "1/2", "½", "2.5"
+  var NUM = /(\d+(?:\.\d+)?\s*[½¼¾⅓⅔⅛]|\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?|[½¼¾⅓⅔⅛])/g;
+
+  function toNum(t) {
+    t = t.trim();
+    var m;
+    if ((m = t.match(/^(\d+)\s+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
+    if ((m = t.match(/^(\d+)\/(\d+)$/))) return m[1] / m[2];
+    if ((m = t.match(/^(\d+(?:\.\d+)?)\s*([½¼¾⅓⅔⅛])$/))) return +m[1] + FR[m[2]];
+    if (FR[t] != null) return FR[t];
+    return parseFloat(t);
+  }
+
+  var GLYPH = [[0.25, '¼'], [1 / 3, '⅓'], [0.5, '½'], [2 / 3, '⅔'], [0.75, '¾']];
+  // metric=true: round g/mL sensibly; otherwise kitchen fractions.
+  function fmt(v, metric) {
+    if (metric) {
+      if (v >= 100) return String(Math.round(v / 5) * 5);
+      if (v >= 10) return String(Math.round(v));
+      return String(Math.round(v * 10) / 10);
+    }
+    if (v >= 10) return String(Math.round(v));
+    var whole = Math.floor(v), frac = v - whole, best = [0, ''], d = frac;
+    GLYPH.forEach(function (g) { if (Math.abs(frac - g[0]) < d) { d = Math.abs(frac - g[0]); best = g; } });
+    if (Math.abs(1 - frac) < d) { whole += 1; best = [0, '']; }
+    if (!whole && !best[1]) return v > 0 ? '¼' : '0';  // never show a used ingredient as 0
+    return (whole ? whole : '') + best[1];
+  }
+
+  // Scale every number in a quantity text, e.g. "¼ cup (60 mL)" x2 -> "½ cup (120 mL)".
+  function scaleText(text, f) {
+    if (f === 1) return text;
+    return text.replace(NUM, function (tok, _a, off) {
+      var after = text.slice(off + tok.length);
+      var metric = /^\s*(g|kg|mL|ml|L|l)\b/.test(after);
+      var unitAfter = /^\s*(oz)\b/.test(after) ? false : metric;
+      return fmt(toNum(tok) * f, unitAfter);
+    }).replace(/\b(\d+(?:\.\d+)?)\s*(cup)\b(?!s)/g, function (m, n, u) { return +n > 1 ? n + ' cups' : m; });
+  }
+
+  var UNIT = { g: ['g', 1], kg: ['g', 1000], ml: ['mL', 1], l: ['mL', 1000], tsp: ['mL', 5], tbs: ['mL', 15], tbsp: ['mL', 15], cup: ['mL', 240], cups: ['mL', 240] };
+
+  // One quantity text -> {amount, unit} in base units (g, mL, or '' for a count), or null when it can't be summed.
+  function parseQty(text) {
+    var t = text.replace(/\./g, function (m, i, s) { return /\d/.test(s[i - 1] || '') && /\d/.test(s[i + 1] || '') ? '.' : ' '; });
+    // prefer an explicit metric amount in brackets: "1 cup (150 g)"
+    var br = t.match(/\(([^)]*)\)/);
+    if (br) {
+      var mb = br[1].match(/(\d+(?:\.\d+)?)\s*(g|kg|mL|ml|L)\b/);
+      if (mb) { var u0 = UNIT[mb[2].toLowerCase()]; return { amount: toNum(mb[1]) * u0[1], unit: u0[0] }; }
+    }
+    var main = t.replace(/\(.*?\)/g, '').trim();
+    var m = main.match(/^([\d.½¼¾⅓⅔⅛\/ ]*\d[\d.½¼¾⅓⅔⅛\/ ]*|[½¼¾⅓⅔⅛])\s*([A-Za-z]*)/);
+    if (!m) return null;
+    var n = toNum(m[1]);
+    if (isNaN(n)) return null;
+    var w = m[2].toLowerCase();
+    if (!w) return { amount: n, unit: '' };
+    if (UNIT[w]) return { amount: n * UNIT[w][1], unit: UNIT[w][0] };
+    return { amount: n, unit: w };  // "small", "stalk", "handful", "can" stay as counts of that word
+  }
+
+  var AISLES = [
+    ['Meat & fish', /beef|pork|chicken|kassler|trout|fish|mince|bacon|lamb|sausage|rump|schnitzel/],
+    ['Dairy & eggs', /milk|cream|butter|cheese|feta|yoghurt|yogurt|egg|mayo|tzatziki|parmesan|mozzarella|cheddar/],
+    ['Fruit & veg', /onion|garlic|carrot|potato|tomato|cabbage|radish|lettuce|cucumber|broccoli|bean|pea|chilli|pepper|lemon|lime|apple|pineapple|peach|coriander|parsley|basil|sage|thyme|herb|spring onion|corn|spinach|ginger|mushroom|avocado|baby marrow|courgette|brinjal|edamame/],
+    ['Spices & sauces', /salt|spice|paprika|cumin|masala|curry|mustard|vinegar|sauce|paste|pesto|stock|soy|gochujang|cinnamon|nutmeg|vanilla|nomu|rub|bay leaf|oregano|turmeric|yeast|baking/],
+    ['Pantry', /.*/]
+  ];
+  function aisle(name) {
+    var n = name.toLowerCase();
+    for (var i = 0; i < AISLES.length; i++) if (AISLES[i][1].test(n)) return AISLES[i][0];
+  }
+
+  function cleanName(s) { return s.replace(/\s+/g, ' ').replace(/^[,\s]+|[,\s]+$/g, '').toLowerCase(); }
+
+  // items: [{qty, name, factor, recipe}] -> {groups:{aisle:[{name, amount, unit, from:[recipes]}]}, other:[{name, qty, recipe}]}
+  function shoppingList(items) {
+    var map = {}, other = [];
+    items.forEach(function (it) {
+      var name = cleanName(it.name);
+      if (!name) return;
+      var q = parseQty(it.qty || '');
+      if (!q) { other.push({ name: name, qty: (it.qty || '').trim(), recipe: it.recipe }); return; }
+      var key = name + '|' + q.unit;
+      var e = map[key] || (map[key] = { name: name, amount: 0, unit: q.unit, from: [] });
+      e.amount += q.amount * it.factor;
+      if (e.from.indexOf(it.recipe) < 0) e.from.push(it.recipe);
+    });
+    var groups = {};
+    Object.keys(map).sort().forEach(function (k) {
+      var e = map[k], a = aisle(e.name);
+      (groups[a] || (groups[a] = [])).push(e);
+    });
+    return { groups: groups, other: other };
+  }
+
+  function amountText(e) {
+    if (e.unit === 'g' && e.amount >= 1000) return fmt(e.amount / 1000, true) + ' kg';
+    if (e.unit === 'mL' && e.amount >= 1000) return fmt(e.amount / 1000, true) + ' L';
+    if (e.unit === 'g' || e.unit === 'mL') return fmt(e.amount, true) + ' ' + e.unit;
+    return fmt(e.amount, false) + (e.unit ? ' ' + e.unit : '');
+  }
+
+  // One container scaled by f -> display text. Pots by volume, baking dishes by area (same depth), cups/mugs by count, pans stay.
+  function containerText(c, f) {
+    var t, up = function (v, step) { return Math.ceil(v / step - 1e-9) * step; };
+    if (c.kind === 'vol') {
+      var L = c.litres * f;
+      t = L < 1 ? up(L * 1000, 50) + ' mL ' + c.item : up(L, L < 3 ? 0.5 : 1) + ' L ' + c.item;
+      if (/processor|blender/.test(c.item) && f > 1) t += ' (or blend in batches)';
+    } else if (c.kind === 'area') {
+      var k = Math.sqrt(f);
+      t = (c.round ? Math.round(c.round * k) + ' cm round ' : Math.round(c.rect[0] * k) + ' × ' + Math.round(c.rect[1] * k) + ' cm ') + c.item;
+      if (f !== 1) t += ', same depth' + (f >= 1.8 ? ' (or ' + Math.ceil(f - 0.05) + ' of the original size)' : '');
+    } else if (c.kind === 'each') {
+      t = Math.max(1, Math.ceil(c.count * f - 0.05)) + ' × ' + c.item + (c.size ? ' (' + c.size + ')' : '');
+    } else {
+      t = (c.size ? c.size + ' ' : '') + c.item + (f > 1.01 && /pan|iron/.test(c.item) ? ', cook in batches' : '');
+    }
+    return t + (c.from ? (c.sizeSuggested ? ' · size suggested' : '') : ' · suggested');
+  }
+
+  // g and mL are treated as equal for pack choice: close enough for kitchen liquids and spices.
+  function sameUnit(a, b) { return a === b || (/^(g|mL)$/.test(a) && /^(g|mL)$/.test(b)); }
+  function sizeText(v, unit) {
+    if (unit === 'g' && v >= 1000) return fmt(v / 1000, true) + ' kg';
+    if (unit === 'mL' && v >= 1000) return fmt(v / 1000, true) + ' L';
+    return unit ? v + ' ' + unit : v + '';
+  }
+  // How many packs of `size` cover `amount`. Units that don't compare (e.g. "2 small" vs grams) → 1 pack.
+  function packsNeeded(amount, unit, size, packUnit) {
+    return sameUnit(unit, packUnit) && size > 0 ? Math.max(1, Math.ceil(amount / size - 1e-9)) : 1;
+  }
+  // Smallest single pack that covers the amount; multiples of the largest when none does. null = no known pack (loose produce etc).
+  function buyPack(e, packs) {
+    for (var i = 0; i < packs.length; i++) {
+      if (!packs[i][0].test(e.name)) continue;
+      var unit = packs[i][1], sizes = packs[i][2], size = sizes[sizes.length - 1];
+      if (sameUnit(e.unit, unit)) for (var j = 0; j < sizes.length; j++) if (sizes[j] >= e.amount - 1e-9) { size = sizes[j]; break; }
+      if (!sameUnit(e.unit, unit)) size = sizes[0];
+      var n = packsNeeded(e.amount, e.unit, size, unit);
+      return { n: n, size: size, unit: unit, search: packs[i][3] || e.name, text: n + ' × ' + sizeText(size, unit) };
+    }
+    return null;
+  }
+  return { buyPack: buyPack, sizeText: sizeText, containerText: containerText, toNum: toNum, fmt: fmt, scaleText: scaleText, parseQty: parseQty, shoppingList: shoppingList, amountText: amountText, aisle: aisle, AISLE_ORDER: AISLES.map(function (a) { return a[0]; }) };
+})();
+if (typeof module !== 'undefined') module.exports = RB;
+
+// Containers for the 21 built-in recipes, at the recipe's own serving/batch size.
+// kind: vol (litres, scales with amount) | area (baking: keep depth, area scales) | each (count per base, scales) | fixed (size stays, cook in batches)
+// from: true = the recipe names this container; false = suggested (the source gives no container or size). sizeSuggested: container from recipe, size is ours.
+var RB_CONTAINERS = {
+  'hummus': [{ item: 'food processor bowl', kind: 'vol', litres: 1, from: false }],
+  'potato-sauce': [{ item: 'pot', kind: 'vol', litres: 2, from: false }, { item: 'blender jug', kind: 'vol', litres: 1, from: false }],
+  'tomato-sauce': [{ item: 'pot', kind: 'vol', litres: 2, from: false }],
+  'mozzarella': [{ item: 'pot', kind: 'vol', litres: 1.5, from: false }, { item: 'oiled mould', kind: 'vol', litres: 0.4, from: false }],
+  'quick-pizza': [{ item: 'small heavy-based pot', kind: 'vol', litres: 1, from: false }],
+  'cheddar-block': [{ item: 'oiled small bowl, ramekin or silicone mould', kind: 'vol', litres: 0.5, from: false }],
+  'cultured': [{ item: 'muslin-lined mould', kind: 'vol', litres: 0.5, from: false }, { item: 'clean jar or bowl (to ferment)', kind: 'vol', litres: 1, from: false }],
+  'korean-beef-bibimbap': [{ item: 'pot with lid (rice)', kind: 'vol', litres: 2, from: false }, { item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'peach-paprika-kassler': [{ item: 'oven tray', kind: 'area', rect: [30, 40], from: false }, { item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'spicy-beef-vindaloo': [{ item: 'pot', kind: 'vol', litres: 2.5, from: false }],
+  'beef-rump-gratin': [{ item: 'greased oven dish', kind: 'area', rect: [20, 20], from: false }, { item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'chicken-kiev-meatballs': [{ item: 'oven tray', kind: 'area', rect: [30, 40], from: false }, { item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'rainbow-trout-lemon-chilli': [{ item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'tropical-balsamic-tortilla': [{ item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'red-pesto-polenta-chicken': [{ item: 'pot (polenta)', kind: 'vol', litres: 2, from: false }, { item: 'frying pan', kind: 'fixed', size: '28 cm', from: false }],
+  'indian-roti': [{ item: 'non-stick pan', kind: 'fixed', size: '24-26 cm', from: false }],
+  'tin-mug-quiche': [{ item: 'greased tin mug', kind: 'each', count: 1, size: 'about 350 mL', from: true, sizeSuggested: true }, { item: 'pot of boiling water, deep enough for the mugs to stand halfway in', kind: 'fixed', size: '', from: true }],
+  'bbq-quesadilla': [{ item: 'frying pan', kind: 'fixed', size: '28 cm (fits a 25 cm tortilla)', from: false }],
+  'eggless-waffles': [{ item: 'waffle iron', kind: 'fixed', size: '', from: true }, { item: 'mixing bowls', kind: 'fixed', size: '2', from: true }],
+  'malva-koppie': [{ item: 'tin cup', kind: 'each', count: 4, size: 'about 250 mL', from: true, sizeSuggested: true }, { item: 'flat-bottomed potjie with a round wire rack', kind: 'fixed', size: '', from: true }],
+  'appeltert-potjie': [{ item: 'flat-bottomed potjie', kind: 'vol', litres: 4, from: false }]
+};
+if (typeof module !== 'undefined') module.exports = RB_CONTAINERS;
+
+// Typical smallest South African retail packs, used for the "Buy" column before real prices exist.
+// [pattern, unit ('g', 'mL', '' = count, or a word like 'bunch'), pack sizes small→large, search term for the price check (null = the item's own name)]
+// First match wins, so specific names come first.
+var RB_PACKS = [
+  [/grated cheddar/, 'g', [200, 400], 'grated cheddar cheese'],
+  [/cheddar|jack cheese/, 'g', [200, 400, 900], 'cheddar cheese'],
+  [/italian-style hard cheese|parmesan/, 'g', [100, 200], 'grated parmesan style cheese'],
+  [/feta/, 'g', [200, 400], 'feta cheese'],
+  [/chevin|goat/, 'g', [100], 'chevin goats cheese'],
+  [/salted butter|^butter|extra butter/, 'g', [250, 500], 'butter'],
+  [/margarine/, 'g', [500], 'margarine'],
+  [/fresh cream|vanilla ice cream or cream/, 'mL', [250, 500], 'fresh cream'],
+  [/sour cream/, 'mL', [250], 'sour cream'],
+  [/tzatziki/, 'g', [200], 'tzatziki'],
+  [/soy milk/, 'mL', [1000], 'unsweetened soy milk'],
+  [/coconut milk/, 'mL', [400], 'coconut milk'],
+  [/milk/, 'mL', [1000, 2000], 'full cream milk'],
+  [/egg/, '', [6, 18, 30], 'large eggs'],
+  [/kewpie/, 'g', [300], 'kewpie mayonnaise'],
+  [/mayo/, 'g', [375, 750], 'mayonnaise'],
+  [/chicken mince/, 'g', [400], 'chicken mince'],
+  [/crumbed chicken/, 'g', [400], 'crumbed chicken breasts'],
+  [/chicken breast/, 'g', [500, 1000], 'chicken breast fillets'],
+  [/^chicken$/, 'g', [1000], 'whole chicken'],
+  [/rump strips/, 'g', [400], 'beef rump strips'],
+  [/schnitzel/, 'g', [400], 'beef schnitzel'],
+  [/rump/, 'g', [500], 'beef rump steak'],
+  [/kassler/, 'g', [500], 'smoked kassler chops'],
+  [/trout/, 'g', [250], 'rainbow trout fillets'],
+  [/cake flour|all-purpose flour/, 'g', [1000, 2500], 'cake flour'],
+  [/polenta/, 'g', [1000], 'polenta'],
+  [/bulgur/, 'g', [500], 'bulgur wheat'],
+  [/black rice/, 'g', [500], 'black rice'],
+  [/^rice$/, 'g', [1000, 2000], 'white rice'],
+  [/brown sugar/, 'g', [500, 1000], 'brown sugar'],
+  [/sugar/, 'g', [500, 1000, 2500], 'white sugar'],
+  [/baking powder/, 'g', [100, 200], 'baking powder'],
+  [/bicarbonate/, 'g', [100], 'bicarbonate of soda'],
+  [/tapioca/, 'g', [250], 'tapioca starch'],
+  [/agar/, 'g', [50], 'agar powder'],
+  [/nutritional yeast/, 'g', [100], 'nutritional yeast'],
+  [/panko/, 'g', [200], 'panko breadcrumbs'],
+  [/chocolate chips/, 'g', [100, 200], 'chocolate chips'],
+  [/raisins/, 'g', [200, 500], 'raisins'],
+  [/apricot jam/, 'g', [450], 'apricot jam'],
+  [/cashew/, 'g', [100, 200], 'raw cashew nuts'],
+  [/almonds/, 'g', [100, 200], 'almonds'],
+  [/pine nuts/, 'g', [50, 100], 'pine nuts'],
+  [/sesame seeds/, 'g', [100], 'sesame seeds'],
+  [/tahini/, 'g', [250], 'tahini'],
+  [/white miso/, 'g', [300], 'white miso paste'],
+  [/chickpeas/, 'g', [400], 'chickpeas tin'],
+  [/chopped tomatoes/, 'g', [400], 'chopped tomatoes tin'],
+  [/passata/, 'g', [500], 'tomato passata'],
+  [/tomato paste/, 'g', [50, 115], 'tomato paste'],
+  [/sun-dried tomatoes/, 'g', [100, 280], 'sun-dried tomatoes'],
+  [/peach halves/, 'g', [410, 825], 'peach halves tin'],
+  [/piquant/, 'g', [400], 'piquante peppers'],
+  [/olives/, 'g', [280], 'pitted green olives'],
+  [/capers/, 'g', [100], 'capers'],
+  [/red pepper pesto/, 'g', [125], 'red pepper pesto'],
+  [/durban curry paste/, 'g', [100], 'durban curry paste'],
+  [/gochujang/, 'g', [200], 'gochujang'],
+  [/dijon/, 'g', [200], 'dijon mustard'],
+  [/bbq sauce/, 'mL', [375, 750], 'bbq sauce'],
+  [/balsamic reduction/, 'mL', [250], 'balsamic reduction'],
+  [/rice wine vinegar/, 'mL', [250], 'rice vinegar'],
+  [/red wine vinegar/, 'mL', [500], 'red wine vinegar'],
+  [/vinegar/, 'mL', [750], 'white vinegar'],
+  [/sesame oil/, 'mL', [250], 'sesame oil'],
+  [/coconut oil/, 'mL', [250, 500], 'coconut oil'],
+  [/olive oil|olive or sunflower/, 'mL', [250, 500, 1000], 'olive oil'],
+  [/cooking oil|butter or oil/, 'mL', [750, 2000], 'sunflower oil'],
+  [/lemon juice/, 'mL', [250], 'lemon juice'],
+  [/chicken stock|cajun stock/, '', [12], 'chicken stock'],  // cubes; the recipe's mL is the made-up stock
+  [/vanilla extract/, 'mL', [50], 'vanilla extract'],
+  [/smoked paprika/, 'g', [50], 'smoked paprika'],
+  [/cayenne/, 'g', [50], 'cayenne pepper'],
+  [/cumin/, 'g', [50], 'ground cumin'],
+  [/cinnamon/, 'g', [50], 'ground cinnamon'],
+  [/garlic powder/, 'g', [50], 'garlic powder'],
+  [/vindaloo/, 'g', [50], 'vindaloo spice'],
+  [/nomu/, 'g', [65], 'nomu rub'],
+  [/bay leaf/, 'g', [10], 'bay leaves'],
+  [/black pepper|salt and pepper/, 'g', [50, 100], 'black pepper'],
+  [/^salt$/, 'g', [500, 1000], 'table salt'],
+  [/edamame/, 'g', [500], 'frozen edamame beans'],
+  [/^corn$/, 'g', [410], 'whole kernel corn tin'],
+  [/green beans/, 'g', [300], 'green beans'],
+  [/long-stem broccoli/, 'g', [200], 'tenderstem broccoli'],
+  [/baby tomatoes/, 'g', [250], 'cherry tomatoes'],
+  [/salad leaves|green leaves/, 'g', [100], 'salad leaves'],
+  [/coriander|cilantro/, 'g', [20], 'fresh coriander'],
+  [/thyme/, 'g', [20], 'fresh thyme'],
+  [/fresh (dill|mint|parsley|sage)/, 'g', [20], null],
+  [/pineapple chunks/, 'g', [400], 'pineapple chunks'],
+  [/tortilla/, '', [8], 'wheat tortillas'],
+  [/poppadoms/, '', [10], 'poppadoms'],
+  [/pinot noir/, 'mL', [750], 'pinot noir'],
+  [/amarula/, 'mL', [375, 750], 'amarula'],
+  [/brandy or rum/, 'mL', [200, 750], 'brandy'],
+  [/probiotic/, '', [10], 'probiotic capsules'],
+  // Produce: smallest bag or bunch. Units that differ from the recipe's (e.g. '2' cloves vs 'bulb') mean 1 pack.
+  [/spring onion/, 'bunch', [1], 'spring onions'],
+  [/onion/, 'g', [1000, 2000], 'onions'],
+  [/cabbage/, 'head', [1], 'cabbage'],
+  [/carrot/, 'g', [500, 1000], 'carrots'],
+  [/garlic/, 'bulb', [1, 3], 'garlic'],
+  [/radish/, 'bunch', [1], 'radishes'],
+  [/celery/, 'bunch', [1], 'celery'],
+  [/potato/, 'g', [1000, 2000], 'potatoes'],
+  [/^tomato$/, 'g', [500, 1000], 'tomatoes'],
+  [/cucumber/, 'each', [1], 'english cucumber'],
+  [/lemon/, 'bag', [1], 'lemons']
+];
+if (typeof module !== 'undefined') module.exports = RB_PACKS;
+
+</script>
+<style>
+.rb-tip{position:fixed;z-index:99;max-width:260px;padding:6px 9px;border-radius:5px;background:var(--ink);color:var(--paper);font:0.82rem var(--font-body);pointer-events:none}
+.rb-guide{padding:0 4px 8px;font:0.95rem/1.5 var(--font-body)} .rb-guide h3{margin:14px 0 4px;font-size:1rem}
+.rb-keybox summary{cursor:pointer;font-weight:500} .rb-keybox input{flex:1;min-width:160px;min-height:40px}
+label.rb-tab{display:inline-flex;align-items:center}
+@media print{.rb-tip,#rb-guide{display:none!important}}
+</style>
+<script>
+var RB_SEEDS = {"orange-sauce-for-pancakes": {"added": "2026-11-01T16:46:27.020Z", "category": "Sauces", "containers": [{"from": false, "item": "medium saucepan", "kind": "vol", "litres": 1, "size": ""}], "lede": "SERVES 6 · 10 MIN HANDS-ON · 10 MIN OVERALL", "notes": [{"term": "Original title", "text": "Lemoensous (lemon sauce)"}, {"term": "Servings", "text": "Not stated. The recipe follows one for 5 to 6 large pancakes, so 6 is assumed."}, {"term": "Conversions", "text": "Sugar 150 g is about 190 mL. Butter 25 g is about 25 mL (2 Tbs.)."}, {"term": "Serving", "text": "Pour over rolled-up pancakes (pannekoeke). The pancake recipe is not on this page."}], "serves": 6, "source": "", "table_html": "<table class=\"recipe\"><colgroup><col style=\"width: 168px\"><col style=\"width: 78px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><\/colgroup><tbody><tr><th class=\"title\" colspan=\"4\">Orange sauce for pancakes (serves 6)<\/th><\/tr><tr><td class=\"ing\"><span class=\"q\">250 mL<\/span>&nbsp;Orange juice<\/td><td class=\"prep\"><\/td><td class=\"step\" rowspan=\"3\">boil together<span class=\"t\">5 min<\/span><\/td><td class=\"step\" rowspan=\"4\">stir in brandy, pour over rolled pancakes and serve warm<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">150 g<\/span> white sugar<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">25 g<\/span> butter or margarine<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">100 mL<\/span> brandy<\/td><td class=\"prep\"><\/td><td class=\"step blank\"><\/td><\/tr><\/tbody><\/table>", "tags": ["lemon", "pancake sauce", "brandy"], "time": "10 min total", "title": "Orange sauce for pancakes"}, "osso-buco-braised-veal-shanks": {"added": "2026-11-01T17:00:55.130Z", "category": "Beef", "containers": [{"from": true, "item": "large Dutch oven (with lid or parchment lid)", "kind": "vol", "litres": 6}, {"from": false, "item": "shallow bowl for flour", "kind": "vol", "litres": 1}, {"from": true, "item": "small bowl for gremolata", "kind": "vol", "litres": 0.25}, {"from": true, "item": "platter for browned shanks", "kind": "fixed", "size": "large platter or rimmed baking sheet"}], "lede": "SERVES 6 · 45 MIN HANDS-ON · 3 HR 45 MIN OVERALL", "notes": [{"term": "Original title", "text": "Osso Buco (Italian Braised Veal Shanks)."}, {"term": "Table layout", "text": "The grid is a simplified rendering: the vegetables are cooked after the shanks are browned and the pot is then combined with the shanks and liquids. Follow the order in the method below."}, {"term": "Method order", "text": "Heat oven to 165°C. Season shanks, dredge in flour and brown in oil in batches (about 4 min per side). Set aside. Cook butter, onion, carrot, celery and garlic until softened (about 6 min). Add tomatoes, wine, stock, shanks with juices, thyme and bay leaf. Liquid should nearly cover shanks; top up with stock or water if needed. Simmer, cover with parchment lid and braise 2 hr. Remove lid and cook about 1 hr more until fork-tender, adding stock or water if it gets dry. Stir in gremolata for the last 20 min."}, {"term": "Flour", "text": "Recipe states all-purpose flour; use plain flour (cake flour is not needed). Read the ingredient as 140 g (about 250 mL) plain flour."}, {"term": "Mincing", "text": "Mince the vegetables very finely, or pulse in a food processor, adding any released liquid to the pot."}, {"term": "Stock", "text": "If using store-bought stock, sprinkle about 2 tsp (10 mL) powdered gelatin over it and let it hydrate before using."}, {"term": "Twine", "text": "Tying the shanks with butcher's twine is optional; remove before serving."}, {"term": "Serving", "text": "Spoon sauce over the shanks, pass remaining gremolata, and offer small spoons for the marrow. Traditionally served with risotto alla Milanese."}, {"term": "Temperature", "text": "Oven set to 165°C (325°F)."}], "serves": 6, "source": "", "table_html": "<table class=\"recipe\"><colgroup><col style=\"width: 168px\"><col style=\"width: 78px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><\/colgroup><tbody><tr><th class=\"title\" colspan=\"7\">Osso buco (serves 6)<\/th><\/tr><tr><td class=\"ing\"><span class=\"q\">6 (1.8 kg total)<\/span> veal shanks (osso buco), 2.5 to 4 cm thick<\/td><td class=\"prep\">season with salt and pepper; tie with twine (optional)<\/td><td class=\"step\" rowspan=\"2\">dredge in flour, shaking off excess; brown in hot oil in batches<span class=\"t\">4 min per side<\/span>; set aside<\/td><td class=\"step blank\" rowspan=\"6\"><\/td><td class=\"step\" rowspan=\"11\">add shanks, juices, tomatoes, wine, stock, thyme and bay leaf; bring to a simmer; cover with parchment lid and braise at 165°C<span class=\"t\">2 hr<\/span><\/td><td class=\"step\" rowspan=\"11\">remove lid; braise until fork-tender; stir in 5 to 10 mL gremolata for last 20 min<span class=\"t\">1 hr<\/span><\/td><td class=\"step\" rowspan=\"11\">skim fat; adjust sauce; discard thyme and bay leaf; season; serve with remaining gremolata<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">140 g (250 mL)<\/span> cake flour or all-purpose flour<\/td><td class=\"prep\">in shallow bowl<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">60 mL<\/span> extra-virgin olive oil<\/td><td class=\"prep\">plus more if needed<\/td><td class=\"step\" rowspan=\"4\">heat in Dutch oven over medium-high heat<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">15 g<\/span> unsalted butter<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">340 g (1 large)<\/span> yellow onion<\/td><td class=\"prep\">mince finely<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">170 g (2 medium)<\/span> carrots<\/td><td class=\"prep\">mince finely<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">120 g (1 rib)<\/span> celery<\/td><td class=\"prep\">mince finely<\/td><td class=\"step\" rowspan=\"3\">cook, stirring, until softened and light golden<span class=\"t\">6 min<\/span><\/td><td class=\"step\" rowspan=\"5\">stir together<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">3<\/span> medium garlic cloves<\/td><td class=\"prep\">mince<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">800 g<\/span> can peeled whole tomatoes<\/td><td class=\"prep\">seed, drain, crush flesh by hand<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">235 mL<\/span> dry white wine<\/td><td class=\"prep\"><\/td><td class=\"step blank\" rowspan=\"2\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">175 mL<\/span> low-sodium chicken stock<\/td><td class=\"prep\">bloom 2 tsp (10 mL) powdered gelatin in it if store-bought<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">3<\/span> fresh thyme sprigs<\/td><td class=\"prep\"><\/td><td class=\"step blank\" colspan=\"1\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">1<\/span> bay leaf<\/td><td class=\"prep\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2 Tbs. (20 g)<\/span> flat-leaf parsley leaves and tender stems<\/td><td class=\"prep\">mince finely<\/td><td class=\"step\" rowspan=\"3\">stir together for gremolata; set aside<\/td><td class=\"step blank\" rowspan=\"3\"><\/td><td class=\"step blank\" rowspan=\"3\"><\/td><td class=\"step blank\" rowspan=\"3\"><\/td><td class=\"step blank\" rowspan=\"3\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">1<\/span> lemon, zest only<\/td><td class=\"prep\">mince finely<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">6<\/span> medium garlic cloves<\/td><td class=\"prep\">mince finely<\/td><\/tr><\/tbody><\/table>", "tags": ["Italian", "braise", "veal"], "time": "3 hr 45 min total", "title": "Osso Buco (Braised Veal Shanks)"}, "oxtail-stew-potjie-style-braise": {"added": "2026-11-01T17:02:47.030Z", "category": "Beef", "containers": [{"from": true, "item": "Dutch oven or large heavy-bottomed pot", "kind": "vol", "litres": 5}], "lede": "SERVES 5–6 · 45 MIN HANDS-ON · 5 HR 45 MIN OVERALL · FAMILY RECIPE", "notes": [{"term": "Table note", "text": "The table above is incomplete and must be replaced with the full version below before use."}], "serves": 5, "source": "", "table_html": "<table class=\"recipe\"><colgroup><col style=\"width: 168px\"><col style=\"width: 78px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><\/colgroup><tbody><tr><th class=\"title\" colspan=\"7\">Oxtail stew (serves 4–6)<\/th><\/tr><tr><td class=\"ing\"><span class=\"q\">1–1.5 kg<\/span> oxtail<\/td><td class=\"prep\">cut into pieces, pat dry<\/td><td class=\"step\">season with salt, pepper and a pinch of the brown sugar<\/td><td class=\"step\" rowspan=\"2\">sear in batches over medium-high heat until deeply browned; set aside<span class=\"t\">15 min<\/span><\/td><td class=\"step blank\" rowspan=\"11\"><\/td><td class=\"step blank\" rowspan=\"11\"><\/td><td class=\"step blank\" rowspan=\"11\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">as needed<\/span> olive or sunflower oil<\/td><td class=\"prep\"><\/td><td class=\"step blank\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2<\/span> onions<\/td><td class=\"prep\">chopped<\/td><td class=\"step\" rowspan=\"5\">cook in same pot until soft and translucent<\/td><td class=\"step\" rowspan=\"5\">stir in and cook a few minutes<span class=\"t\">5 min<\/span><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2 cloves<\/span> garlic<\/td><td class=\"prep\">minced<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2<\/span> tomatoes (or 2 Tbs. / 30 mL tomato paste)<\/td><td class=\"prep\">chopped<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2<\/span> bay leaves<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">a few sprigs<\/span> fresh thyme or origanum<\/td><td class=\"prep\"><\/td><\/tr><\/tbody><\/table>", "tags": ["braise", "slow-cooked", "oxtail"], "time": "about 5 hr 45 min total", "title": "Oxtail Stew (Potjie-style Braise)"}, "pancakes-without-eggs": {"added": "2026-11-02T17:10:56.388Z", "category": "Breakfast", "containers": [{"from": false, "item": "large mixing bowl", "kind": "vol", "litres": 2, "size": ""}, {"from": false, "item": "frying pan", "kind": "fixed", "size": "24-26 cm non-stick pan"}, {"from": false, "item": "small saucepan (for lemon sauce)", "kind": "vol", "litres": 1, "size": ""}], "lede": "SERVES 5-6 · 10 MIN HANDS-ON · 30 MIN OVERALL · FAMILY RECIPE BOOK", "notes": [{"term": "Original title", "text": "Pannekoek sonder eiers"}, {"term": "Lemon sauce method", "text": "The photo is cut off before the lemon sauce method (Lemoensous), so its steps are not shown. The sauce ingredients are listed as written. Check the original page for the method."}, {"term": "Frying", "text": "Grease the hot pan with a little oil for the first pancake only. After that the batter no longer sticks."}, {"term": "Yield", "text": "Makes 5-6 large pancakes."}, {"term": "Conversions", "text": "Original cup measures: water 1¾ cups, oil ¼ cup, vinegar 3 tsp, sugar ¾ cup, butter 2 Tbs."}, {"term": "Lemon sauce table rows", "text": "The lemon sauce rows are shown beside the pancake columns for completeness, but the sauce is cooked separately. Its step cells are left blank because the method was not visible."}], "serves": 5, "source": "", "table_html": "<table class=\"recipe\"><colgroup><col style=\"width: 168px\"><col style=\"width: 78px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><\/colgroup><tbody><tr><th class=\"title\" colspan=\"5\">Egg-free pancakes with lemon sauce (serves 5-6)<\/th><\/tr><tr><td class=\"ing\"><span class=\"q\">150 g<\/span> cake flour (koekmeelblom)<\/td><td class=\"prep\">sift<\/td><td class=\"step\" rowspan=\"4\">sift dry ingredients together<\/td><td class=\"step\" rowspan=\"7\">mix dry ingredients into wet to make a batter<\/td><td class=\"step\" rowspan=\"9\">fry in a lightly greased hot pan until cooked; serve with lemon sauce<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2 mL<\/span> baking powder<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2 mL<\/span> bicarbonate of soda (koeksoda)<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">1 mL<\/span> salt<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">440 mL<\/span> water<\/td><td class=\"prep\"><\/td><td class=\"step\" rowspan=\"3\">whisk together at once<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">15 mL<\/span> vinegar (asyn)<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">60 mL<\/span> cooking oil (kookolie)<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">250 mL<\/span> lemon juice<\/td><td class=\"prep\"><\/td><td class=\"step\" rowspan=\"2\">make the lemon sauce (method not shown in photo)<\/td><td class=\"step blank\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">150 g<\/span> white sugar (190 mL)<\/td><td class=\"prep\"><\/td><td class=\"step blank\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">25 g<\/span> butter or margarine (25 mL)<\/td><td class=\"prep\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">100 mL<\/span> brandy (brandewyn)<\/td><td class=\"prep\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><td class=\"step blank\"><\/td><\/tr><\/tbody><\/table>", "tags": ["egg-free", "pancakes", "lemon sauce"], "time": "30 min total", "title": "Pancakes without eggs"}, "white-buttermilk-rusks": {"added": "2026-11-03T07:49:50.517Z", "category": "Rusks", "containers": [{"count": 2, "from": true, "item": "medium loaf tin (greased)", "kind": "area", "rect": [24, 13]}, {"from": false, "item": "large mixing bowl", "kind": "vol", "litres": 5}, {"from": false, "item": "medium bowl or jug for the buttermilk and eggs", "kind": "vol", "litres": 1.5}, {"from": false, "item": "sieve", "kind": "fixed", "size": "standard"}], "lede": "MAKES 6 DOZEN (72) RUSKS · ABOUT 30 MIN HANDS-ON · ABOUT 5 HOURS OVERALL", "notes": [{"term": "Original title", "text": "Ryk wit karringmelkbeskuit"}, {"term": "Handwritten changes", "text": "The printed salt amount (5 mL) is crossed out by hand and replaced with 2.5 mL. The sugar is written as 1½ cups (375 mL). The handwritten word next to the buttermilk looks like 'maast' (possibly a measure note) and could not be interpreted, so the printed 500 mL was used."}, {"term": "Oven", "text": "Preheat to 180 °C. Grease two medium loaf tins well. Bake until done, or until a skewer comes out clean when inserted into the highest part of the rusk."}, {"term": "Method note", "text": "Rub the butter into the flour and salt until the mixture looks crumbly, then stir in the sugar. This is a halved version of the original recipe."}, {"term": "Self-raising flour", "text": "Bruismeel is South African self-raising flour."}], "serves": 72, "source": "", "table_html": "<table class=\"recipe\"><colgroup><col style=\"width: 168px\"><col style=\"width: 78px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><col style=\"width: 100px\"><\/colgroup><tbody><tr><th class=\"title\" colspan=\"6\">White buttermilk rusks (makes 72)<\/th><\/tr><tr><td class=\"ing\"><span class=\"q\">1 kg<\/span> self-raising flour (bruismeel)<\/td><td class=\"prep\">sift<\/td><td class=\"step\" rowspan=\"3\">sift together, then rub in butter until crumbly<\/td><td class=\"step\" rowspan=\"4\">stir sugar into the crumbly mixture<\/td><td class=\"step\" rowspan=\"6\">add wet mixture to dry mixture and mix very well; divide between 2 tins; bake at 180 °C on the middle rack<span class=\"t\">50-60 min<\/span><\/td><td class=\"step\" rowspan=\"6\">turn out, cool slightly, cut into fingers and dry at 100 °C<span class=\"t\">about 4 hours<\/span>; store in an airtight container<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2.5 mL<\/span> (½ tsp) salt<\/td><td class=\"prep\">sift with flour<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">500 g<\/span> butter<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">375 mL<\/span> (1½ cups) sugar<\/td><td class=\"prep\"><\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">500 mL<\/span> buttermilk (karringmelk)<\/td><td class=\"prep\"><\/td><td class=\"step\" rowspan=\"2\" colspan=\"2\">whisk together well<\/td><\/tr><tr><td class=\"ing\"><span class=\"q\">2<\/span> extra-large eggs<\/td><td class=\"prep\">beaten<\/td><\/tr><\/tbody><\/table>", "tags": ["Rusks", "Buttermilk", "Baking"], "time": "about 5 hours total (50-60 min baking plus about 4 hours drying)", "title": "White Buttermilk Rusks"}};
+/* Public edition: stands in for claude.ai's db + sample so app.js runs unchanged.
+   Data lives in this browser (localStorage). Claude is optional, through the user's own API key. */
+(function () {
+  var P = 'rb-pub:', KEY = 'rb-api-key', MODEL = 'claude-sonnet-5-5';
+  var listeners = [];
+
+  function read(path) { try { return JSON.parse(localStorage.getItem(P + path)); } catch (e) { return null; } }
+  function paths(col) {
+    var out = [];
+    for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k.indexOf(P + col + '/') === 0) out.push(k.slice(P.length)); }
+    return out.sort();
+  }
+  function snapDoc(path, d) { return { id: path.split('/').pop(), exists: d != null, data: function () { return d; }, metadata: { hasPendingWrites: false } }; }
+  function colSnap(col, changes) {
+    var docs = paths(col).map(function (p) { return snapDoc(p, read(p)); });
+    return { docs: docs, docChanges: function () { return changes || docs.map(function (d) { return { type: 'added', doc: d }; }); } };
+  }
+  function notify(path, d, type) {
+    var col = path.split('/')[0];
+    listeners.forEach(function (l) {
+      if (l.doc === path) l.cb(snapDoc(path, d));
+      if (l.col === col) l.cb(colSnap(col, [{ type: type, doc: snapDoc(path, d) }]));
+    });
+  }
+  function doc(path) {
+    return {
+      set: function (d) {
+        return new Promise(function (res, rej) {
+          var had = localStorage.getItem(P + path) != null;
+          try { localStorage.setItem(P + path, JSON.stringify(d)); }
+          catch (e) { rej(new Error('This browser has run out of space for the book. Remove some recipe photos, or Export a backup.')); return; }
+          setTimeout(function () { notify(path, d, had ? 'modified' : 'added'); res(); });
+        });
+      },
+      delete: function () {
+        localStorage.removeItem(P + path);
+        return new Promise(function (res) { setTimeout(function () { notify(path, null, 'removed'); res(); }); });
+      },
+      onSnapshot: function (cb) { listeners.push({ doc: path, cb: cb }); setTimeout(function () { cb(snapDoc(path, read(path))); }); }
+    };
+  }
+  var db = {
+    doc: doc,
+    collection: function (col) {
+      return {
+        doc: function (id) { return doc(col + '/' + id); },
+        onSnapshot: function (cb) { listeners.push({ col: col, cb: cb }); setTimeout(function () { cb(colSnap(col)); }); }
+      };
+    }
+  };
+
+  // Seed the starter recipes once per browser; a user's deletions stick.
+  if (!localStorage.getItem(P + 'seeded') && window.RB_SEEDS) {
+    try {
+      Object.keys(RB_SEEDS).forEach(function (id) { localStorage.setItem(P + 'recipes/' + id, JSON.stringify(RB_SEEDS[id])); });
+      localStorage.setItem(P + 'seeded', '1');
+    } catch (e) {}
+  }
+
+  // ---- Without a key: build the table from typed text --------------------------------------
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var QTY = /^([\d½¼¾⅓⅔⅛][\d½¼¾⅓⅔⅛.,\/ –-]*)\s*(kg|g|ml|l|tsp|tbsp|tbs\.?|cups?|cloves?|pinch)?\s+(.+)$/i;
+  function localParse(text) {
+    var lines = text.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!lines.length) return { error: 'There is no recipe text to read.' };
+    var title = lines.shift().replace(/^#+\s*/, ''), ings = [], steps = [], mode = '', serves = 4;
+    lines.forEach(function (l) {
+      var h = l.toLowerCase().replace(/[:\s]+$/, '');
+      if (/^(ingredients?|bestanddele)$/.test(h)) { mode = 'i'; return; }
+      if (/^(method|steps|instructions|directions|metode|werkwyse|bereiding)$/.test(h)) { mode = 's'; return; }
+      var m = l.match(/^(?:serves|makes|porsies)\s*:?\s*(\d+)/i); if (m) { serves = +m[1]; return; }
+      l = l.replace(/^[-•*]\s*/, '');
+      var numbered = /^\d+[.)]\s/.test(l);
+      if (mode === 'i' || (!mode && !numbered && QTY.test(l))) ings.push(l);
+      else steps.push(l.replace(/^\d+[.)]\s*/, ''));
+    });
+    if (!ings.length) return { error: 'No ingredients found. Put one ingredient per line with the amount first (for example "250 mL milk"), under a heading "Ingredients".' };
+    if (!steps.length) steps = ['combine'];
+    var n = ings.length, cols = 2 + steps.length;
+    var h = '<table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px">' +
+      steps.map(function () { return '<col style="width: 100px">'; }).join('') + '</colgroup><tbody>' +
+      '<tr><th class="title" colspan="' + cols + '">' + esc(title) + ' (serves ' + serves + ')</th></tr>';
+    ings.forEach(function (g, i) {
+      var m = g.match(QTY), q = m ? (m[1].trim() + (m[2] ? ' ' + m[2] : '')) : '', name = m ? m[3] : g;
+      h += '<tr><td class="ing">' + (q ? '<span class="q">' + esc(q) + '</span> ' : '') + esc(name) + '</td><td class="prep"></td>' +
+        (i === 0 ? steps.map(function (s) { return '<td class="step" rowspan="' + n + '">' + esc(s) + '</td>'; }).join('') : '') + '</tr>';
+    });
+    h += '</tbody></table>';
+    return { title: title, category: 'My recipes', serves: serves, time: '', tags: [], table_html: h, notes: [], source: '', containers: [], lede: 'SERVES ' + serves };
+  }
+
+  // ---- With a key: call Claude directly from this browser ----------------------------------
+  function b64(blob) {
+    return new Promise(function (res, rej) {
+      var r = new FileReader();
+      r.onload = function () { var s = String(r.result); res({ type: blob.type || 'image/jpeg', data: s.slice(s.indexOf(',') + 1) }); };
+      r.onerror = rej; r.readAsDataURL(blob);
+    });
+  }
+  function sample(prompt, opts) {
+    var key = localStorage.getItem(KEY), imgs = (opts && opts.images) || [];
+    if (!key) {
+      if (imgs.length) return Promise.reject(new Error('Reading photos needs your own Claude API key (see "Claude API key" below). Without a key, remove the photos and type the recipe instead.'));
+      var text = (prompt.split('Recipe text from the user:\n')[1] || '');
+      return Promise.resolve({ text: JSON.stringify(localParse(text)) });
+    }
+    return Promise.all(imgs.map(b64)).then(function (parts) {
+      var content = parts.map(function (p) { return { type: 'image', source: { type: 'base64', media_type: p.type, data: p.data } }; });
+      content.push({ type: 'text', text: prompt });
+      return fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: MODEL, max_tokens: 8000, messages: [{ role: 'user', content: content }] })
+      });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (r.status === 429) throw { code: 'rate_limited' };
+        if (!r.ok) throw new Error(r.status === 401 ? 'The API key was not accepted. Check it under "Claude API key".' : ((j.error && j.error.message) || 'Claude returned error ' + r.status));
+        return { text: (j.content || []).filter(function (c) { return c.type === 'text'; }).map(function (c) { return c.text; }).join('') };
+      });
+    });
+  }
+  sample.limits = function () { return Promise.resolve({ images: true }); };
+
+  window.claude = { use: function (what) { return Promise.resolve(what === 'db' ? db : what === 'sample' ? sample : null); } };
+
+  // ---- Page extras: guide, backup, API key, hover tips -------------------------------------
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') e.textContent = attrs[k]; else if (k === 'html') e.innerHTML = attrs[k]; else if (k.slice(0, 2) === 'on') e[k] = attrs[k]; else e.setAttribute(k, attrs[k]); });
+    (kids || []).forEach(function (c) { e.appendChild(c); });
+    return e;
+  }
+  function backup() {
+    var out = {};
+    for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k.indexOf('rb-') === 0 && k !== KEY) out[k] = localStorage.getItem(k); }
+    var a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(out)], { type: 'application/json' })), download: 'recipe-book-backup-' + new Date().toISOString().slice(0, 10) + '.json' });
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function restore(file) {
+    file.text().then(function (t) {
+      var o = JSON.parse(t), ks = Object.keys(o).filter(function (k) { return k.indexOf('rb-') === 0 && k !== KEY && typeof o[k] === 'string'; });
+      if (!ks.length) throw new Error('not a recipe book backup');
+      ks.forEach(function (k) { localStorage.setItem(k, o[k]); });
+      location.reload();
+    }).catch(function (e) { alertBox('Could not import that file: ' + (e.message || e)); });
+  }
+  function alertBox(msg) { var s = document.getElementById('rb-status'); if (s) { s.textContent = msg; s.hidden = false; setTimeout(function () { s.hidden = true; }, 6000); } }
+
+  var GUIDE = '<h3>Find and cook</h3><p>Tap a category or a recipe in the contents. Each recipe is a grid: ingredients on the left, then the steps that use them, left to right. Change <b>Portions</b> with − and +. Amounts and pot sizes change with it.</p>' +
+    '<h3>Plan a menu</h3><p>Tick <b>Menu</b> on the recipes you want. <b>Menu</b> (top bar) lists them with portions. <b>Shopping list</b> adds everything up by shop aisle; tick items off or copy the list.</p>' +
+    '<h3>Add your own recipe</h3><p><b>+ Add a recipe</b>. Type or paste: the title on the first line, then a line <i>Ingredients</i> with one ingredient per line, amount first (<i>250 mL milk</i>), then a line <i>Method</i> with one step per line. <b>Build the recipe</b> makes the grid; check it in Step 2, tick the three boxes and Save.</p>' +
+    '<p>Optional: paste your own <b>Claude API key</b> (from console.anthropic.com) to read photos of recipe cards and recipes in any language. The key stays in this browser only and your Anthropic account pays for each recipe read (a few cents).</p>' +
+    '<h3>Your data</h3><p>Recipes, photos and menus you add are saved in this browser on this device only. Use <b>Export</b> to save a backup file and <b>Import</b> to load it on another phone or computer. Clearing the browser\'s site data deletes them.</p>' +
+    '<h3>Offline</h3><p>Save this page (or the downloaded <i>index.html</i>) to your phone, computer or a USB stick. It works without internet; only reading photos with Claude needs a connection.</p>';
+
+  function extras() {
+    var bar = document.querySelector('.rb-bar');
+    var imp = el('input', { type: 'file', accept: '.json,application/json', class: 'rb-vh', id: 'rb-import-file', onchange: function () { if (this.files[0]) restore(this.files[0]); } });
+    var guide = el('dialog', { id: 'rb-guide', 'aria-labelledby': 'rb-guide-h' }, [
+      el('div', { class: 'rb-dhead' }, [el('h2', { id: 'rb-guide-h', text: 'How to use the recipe book' }), el('button', { type: 'button', class: 'rb-btn rb-close', 'aria-label': 'Close', text: '✕', onclick: function () { guide.close(); } })]),
+      el('div', { class: 'rb-guide', html: GUIDE })
+    ]);
+    document.body.appendChild(guide);
+    bar.appendChild(el('button', { type: 'button', class: 'rb-tab', id: 'rb-open-guide', title: 'How to use the book, add recipes and keep your data', text: 'Guide', onclick: function () { guide.showModal(); } }));
+    bar.appendChild(el('button', { type: 'button', class: 'rb-tab', id: 'rb-export', title: 'Download a backup of your recipes, photos and menus', text: 'Export', onclick: backup }));
+    bar.appendChild(el('label', { class: 'rb-tab', id: 'rb-import', title: 'Load a backup file made with Export (replaces matching items)', text: 'Import' }, [imp]));
+    var tips = { 'rb-open-menu': 'The dishes you ticked for the menu, with portions', 'rb-open-shop': 'Everything the menu needs, added up and grouped by shop aisle', 'rb-open-add': 'Type, paste or photograph a recipe and add it to the book' };
+    Object.keys(tips).forEach(function (id) { var b = document.getElementById(id); if (b) b.title = tips[id]; });
+
+    // Add dialog: plain-text first, Claude optional.
+    var proc = document.getElementById('rb-process'); if (proc) { proc.textContent = 'Build the recipe'; proc.title = 'Turn the text (or, with an API key, the photos) into a recipe grid you can check'; }
+    var intro = document.querySelector('#rb-add .rb-step + .rb-sub');
+    if (intro) intro.textContent = 'Type or paste the recipe: the title on the first line, then "Ingredients" with one per line (amount first), then "Method" with one step per line. With your own Claude API key you can also use photos and any language.';
+    var text = document.getElementById('rb-text'); if (text) text.placeholder = 'Mug brownie\nServes 1\nIngredients\n30 g flour\n15 mL cocoa\nMethod\nMix everything in a mug\nMicrowave 70 seconds';
+    var keyIn = el('input', { type: 'password', id: 'rb-key', autocomplete: 'off', placeholder: 'sk-ant-…', 'aria-label': 'Claude API key' });
+    keyIn.value = localStorage.getItem(KEY) || '';
+    var keyMsg = el('span', { class: 'rb-sub', text: keyIn.value ? 'Key saved in this browser.' : 'No key: typed text only.' });
+    var keyBox = el('details', { class: 'rb-field rb-keybox' }, [
+      el('summary', { text: 'Claude API key (optional, for photos and other languages)', title: 'Use your own Anthropic API key so Claude can read photos and translate recipes' }),
+      el('p', { class: 'rb-sub', text: 'Get a key at console.anthropic.com. It is stored only in this browser and sent only to Anthropic. Your Anthropic account is billed for each recipe read.' }),
+      el('div', { class: 'rb-row' }, [keyIn,
+        el('button', { type: 'button', class: 'rb-btn', text: 'Save key', title: 'Keep this key in this browser', onclick: function () { var v = keyIn.value.trim(); if (v) { localStorage.setItem(KEY, v); keyMsg.textContent = 'Key saved in this browser.'; } } }),
+        el('button', { type: 'button', class: 'rb-btn', text: 'Forget key', title: 'Remove the key from this browser', onclick: function () { localStorage.removeItem(KEY); keyIn.value = ''; keyMsg.textContent = 'No key: typed text only.'; } })]),
+      keyMsg
+    ]);
+    var actions = document.querySelector('#rb-add .rb-actions'); if (actions) actions.parentNode.insertBefore(keyBox, actions);
+
+    // Hover tips after 0.4 s for anything with a title.
+    var tip = el('div', { class: 'rb-tip', role: 'tooltip' }); tip.hidden = true; document.body.appendChild(tip);
+    var t0;
+    document.addEventListener('mouseover', function (e) {
+      var t = e.target.closest && e.target.closest('[title],[data-tip]'); if (!t) return;
+      if (t.title) { t.setAttribute('data-tip', t.title); t.removeAttribute('title'); }
+      clearTimeout(t0);
+      t0 = setTimeout(function () {
+        var host = t.closest('dialog[open]') || document.body; if (tip.parentNode !== host) host.appendChild(tip);
+        tip.textContent = t.getAttribute('data-tip'); tip.hidden = false;
+        var r = t.getBoundingClientRect();
+        tip.style.left = Math.max(4, Math.min(innerWidth - tip.offsetWidth - 4, r.left)) + 'px';
+        tip.style.top = (r.bottom + 6 + tip.offsetHeight > innerHeight ? r.top - tip.offsetHeight - 6 : r.bottom + 6) + 'px';
+      }, 400);
+    });
+    document.addEventListener('mouseout', function () { clearTimeout(t0); tip.hidden = true; });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', extras); else extras();
+})();
+
+</script>
+<script>
+/* Engineer's Recipe Book app layer: portions, menu, shopping list, add-a-recipe (Claude), shared photos.
+   Built-in recipes are the <article class="recipe"> blocks in the page; added recipes live in db "recipes". */
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag);
+    for (var k in attrs || {}) { if (k === 'text') e.textContent = attrs[k]; else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), attrs[k]); else e.setAttribute(k, attrs[k]); }
+    (kids || []).forEach(function (c) { if (c) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'recipe'; }
+
+  var db = null, sample = null;
+  var recipes = {};          // id -> {id, title, category, serves, article, added}
+  var menu = { items: [], ticked: {} };  // items: [{id, serves}]
+
+  /* ---------- recipe registry ---------- */
+  function servesOf(article) {
+    var t = ($('.lede', article) || {}).textContent || '';
+    var m = t.match(/SERVES\s+(?:ABOUT\s+)?(\d+)/i) || t.match(/MAKES\s+(\d+)\s+SERVINGS?/i) || (($('th.title', article) || {}).textContent || '').match(/serves\s+(\d+)/i);
+    return m ? +m[1] : 0;  // 0 = no serving count: scale in batches
+  }
+  function register(article, added) {
+    var sec = article.closest('section.cat'), h2 = sec && $('h2', sec);
+    var r = { id: article.id, title: ($('h3', article) || {}).textContent || article.id, category: h2 ? h2.textContent : 'My recipes', serves: servesOf(article) || 1, batch: !servesOf(article), article: article, added: !!added };
+    $$('span.q', article).forEach(function (q) { if (!q.dataset.q0) q.dataset.q0 = q.textContent; });
+    var th = $('th.title', article); if (th && !th.dataset.t0) th.dataset.t0 = th.textContent;
+    r.n = r.serves;  // the recipe's current portions/batches, shared by recipe, contents table and menu
+    r.containers = (window.RB_CONTAINERS || {})[r.id] || [];
+    recipes[r.id] = r;
+    addControls(r);
+    addIndexBtn(r);
+    return r;
+  }
+
+  /* ---------- portions ---------- */
+  function scaleArticle(r, n) {
+    var f = n / r.serves;
+    $$('span.q', r.article).forEach(function (q) { q.textContent = RB.scaleText(q.dataset.q0, f); });
+    var th = $('th.title', r.article);
+    if (th) th.textContent = th.dataset.t0.replace(/(serves|makes)\s+(\d+)/i, function (m, w) { return w + ' ' + n; });
+    r.article.classList.toggle('scaled', f !== 1);
+    paintContainers(r, f);
+  }
+  function paintContainers(r, f) {
+    var head = $('header', r.article), box = $('.rb-cont', head);
+    if (!r.containers || !r.containers.length) { if (box) box.remove(); return; }
+    if (!box) { box = el('div', { class: 'rb-cont' }); var hint = $('.rb-hint', head); head.insertBefore(box, hint); }
+    box.textContent = '';
+    box.appendChild(el('span', { class: 'rb-lbl', text: 'Containers' }));
+    box.appendChild(el('ul', {}, r.containers.map(function (c) { return el('li', { text: RB.containerText(c, f) }); })));
+  }
+  function unitWord(r, n) { return r.batch ? (n === 1 ? 'batch' : 'batches') : (n === 1 ? 'portion' : 'portions'); }
+  // Contents table: two extra columns on the right, a menu tick box and the portions/batches for the menu.
+  function indexHead() {
+    var t = $('table.index'); if (!t || t.dataset.rb) return;
+    t.dataset.rb = '1';
+    var cg = $('colgroup', t);
+    if (cg) { cg.textContent = ''; ['30%', '16%', '17%', '15%', '9%', '13%'].forEach(function (w) { cg.appendChild(el('col', { style: 'width: ' + w })); }); }
+    var hr = $('tr', t);
+    hr.appendChild(el('th', { class: 'rb-ixc', text: 'Menu' }));
+    hr.appendChild(el('th', { class: 'rb-ixc', text: 'Portions / batches' }));
+    var wrap = t.closest('.scroll') || t;
+    wrap.parentNode.insertBefore(el('div', { class: 'rb-ixtools' }, [
+      el('button', { type: 'button', class: 'rb-btn', onclick: function () { Object.keys(recipes).forEach(function (k) { setPortions(recipes[k], recipes[k].serves); }); status('All recipes are back to their original portions.'); }, text: '↺ Reset all to original' })
+    ]), wrap);
+  }
+  function addIndexBtn(r) {
+    var a = $('table.index a[href="#' + r.id + '"]'), tr = a && a.closest('tr');
+    if (!tr || $('.rb-ixtick', tr)) return;
+    var cb = el('input', { type: 'checkbox', 'aria-label': 'Put ' + r.title + ' on the menu' });
+    var n = el('input', { type: 'number', min: '1', max: '50', inputmode: 'numeric', value: String(r.n), 'aria-label': (r.batch ? 'Batches' : 'Portions') + ' of ' + r.title });
+    var unit = el('span', { class: 'rb-unit', text: unitWord(r, r.n) });
+    cb.addEventListener('change', function () { var on = menu.items.some(function (i) { return i.id === r.id; }); if (cb.checked !== on) toggleMenu(r.id, r.n); });
+    n.addEventListener('change', function () { setPortions(r, n.value); n.value = r.n; });
+    tr.appendChild(el('td', { class: 'rb-ixtick' }, [el('label', { class: 'rb-tickbox' }, [cb])]));
+    var rs = el('button', { type: 'button', class: 'rb-btn rb-ixreset', title: 'Reset to original (' + r.serves + ')', 'aria-label': 'Reset ' + r.title + ' to original', onclick: function () { setPortions(r, r.serves); }, text: '↺' });
+    tr.appendChild(el('td', { class: 'rb-ixn' }, [el('div', { class: 'rb-ixrow' }, [n, rs]), unit]));
+    r.ix = { cb: cb, n: n, unit: unit };
+    paintMenuBtn(r);
+  }
+  function addControls(r) {
+    var head = $('header', r.article);
+    if (!head || $('.rb-ctl', head)) return;
+    var out = el('output', { 'aria-live': 'polite', text: String(r.n) });
+    r.out = out;
+    function set(v) { setPortions(r, v); }
+    var menuBtn = el('button', { type: 'button', class: 'rb-btn rb-add', onclick: function () { toggleMenu(r.id, r.n); } });
+    r.menuBtn = menuBtn;
+    var ctl = el('div', { class: 'rb-ctl' }, [
+      el('span', { class: 'rb-lbl', text: r.batch ? 'Batches' : 'Portions' }),
+      el('button', { type: 'button', class: 'rb-btn', 'aria-label': 'Fewer portions', onclick: function () { set(r.n - 1); }, text: '−' }),
+      out,
+      el('button', { type: 'button', class: 'rb-btn', 'aria-label': 'More portions', onclick: function () { set(r.n + 1); }, text: '+' }),
+      el('button', { type: 'button', class: 'rb-btn rb-link', 'aria-label': 'Reset ' + r.title + ' to the original ' + (r.batch ? 'batch' : 'portions'), onclick: function () { set(r.serves); }, text: 'Reset to original (' + r.serves + ')' }),
+      menuBtn
+    ]);
+    if (r.added) ctl.appendChild(el('button', { type: 'button', class: 'rb-btn rb-link rb-del', onclick: function () { askDelete(r); }, text: 'Delete' }));
+    head.appendChild(ctl);
+    head.appendChild(el('p', { class: 'rb-hint', text: 'Amounts in the ingredient column and the container sizes scale. Amounts written inside the steps do not.' }));
+    paintContainers(r, 1);
+    paintMenuBtn(r);
+  }
+  // Change a recipe's portions from anywhere; the recipe, contents row, menu and shopping list all follow.
+  function setPortions(r, v) {
+    r.n = Math.max(1, Math.min(50, Math.round(+v) || r.serves));
+    var it = menu.items.find(function (i) { return i.id === r.id; });
+    if (it && it.serves !== r.n) { it.serves = r.n; persistMenu(); renderMenu(); }
+    showPortions(r);
+  }
+  function showPortions(r) {
+    if (r.out) r.out.textContent = r.n;
+    if (r.ix) { if (document.activeElement !== r.ix.n) r.ix.n.value = r.n; r.ix.unit.textContent = unitWord(r, r.n); }
+    scaleArticle(r, r.n);
+  }
+  function syncFromMenu() {
+    menu.items.forEach(function (it) { var r = recipes[it.id]; if (r && r.n !== it.serves) { r.n = it.serves; showPortions(r); } });
+  }
+  function paintMenuBtn(r) {
+    var on = menu.items.some(function (i) { return i.id === r.id; });
+    if (r.menuBtn) { r.menuBtn.textContent = on ? '✓ On the menu' : '+ Add to menu'; r.menuBtn.classList.toggle('on', on); }
+    if (r.ix) {
+      var it = menu.items.find(function (i) { return i.id === r.id; });
+      r.ix.cb.checked = !!it;
+      r.ix.cb.closest('tr').classList.toggle('rb-on', !!it);
+    }
+  }
+
+  /* ---------- menu (one shared "current" menu + saved menus) ---------- */
+  var saveTimer = null, writing = Promise.resolve();
+  function persistMenu() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      var body = JSON.parse(JSON.stringify(menu));
+      if (db) writing = writing.then(function () { return db.doc('menus/current').set(body); }).catch(function (e) { status('Could not save the menu: ' + (e && e.message || e)); });
+      else try { localStorage.setItem('rb-menu', JSON.stringify(body)); } catch (e) {}
+    }, 500);
+  }
+  function toggleMenu(id, serves) {
+    var i = menu.items.findIndex(function (x) { return x.id === id; });
+    if (i >= 0) menu.items.splice(i, 1); else menu.items.push({ id: id, serves: serves });
+    menuChanged();
+  }
+  function menuChanged() { syncFromMenu(); persistMenu(); renderMenu(); Object.keys(recipes).forEach(function (k) { paintMenuBtn(recipes[k]); }); }
+
+  function renderMenu() {
+    var count = menu.items.filter(function (i) { return recipes[i.id]; }).length;
+    $('#rb-menu-count').textContent = count ? ' (' + count + ')' : '';
+    var box = $('#rb-menu-list'); box.textContent = '';
+    if (!count) { box.appendChild(el('p', { class: 'rb-empty', text: 'No dishes yet. Use "+ Add to menu" on any recipe.' })); }
+    menu.items.forEach(function (it) {
+      var r = recipes[it.id]; if (!r) return;
+      var out = el('output', { text: String(it.serves) }), unit = el('span', { class: 'rb-unit', text: unitWord(r, it.serves) });
+      var cont = el('ul', { class: 'rb-mcont' });
+      function paintC() { cont.textContent = ''; (r.containers || []).forEach(function (c) { cont.appendChild(el('li', { text: RB.containerText(c, it.serves / r.serves) })); }); }
+      function set(v) { setPortions(r, v); }
+      paintC();
+      box.appendChild(el('div', { class: 'rb-row' }, [
+        el('a', { href: '#' + r.id, class: 'rb-grow', onclick: function () { closeAll(); }, text: r.title }),
+        el('button', { type: 'button', class: 'rb-btn', 'aria-label': 'Fewer portions of ' + r.title, onclick: function () { set(it.serves - 1); }, text: '−' }),
+        out,
+        el('button', { type: 'button', class: 'rb-btn', 'aria-label': 'More portions of ' + r.title, onclick: function () { set(it.serves + 1); }, text: '+' }),
+        unit,
+        el('button', { type: 'button', class: 'rb-btn rb-link', 'aria-label': 'Remove ' + r.title, onclick: function () { toggleMenu(r.id); }, text: 'remove' })
+      ]));
+      if (cont.childNodes.length) box.appendChild(cont);
+    });
+    renderSaved();
+    renderShop();
+  }
+
+  var saved = [];  // [{id, name, items}]
+  function renderSaved() {
+    var box = $('#rb-saved'); box.textContent = '';
+    saved.forEach(function (m) {
+      box.appendChild(el('div', { class: 'rb-row' }, [
+        el('span', { class: 'rb-grow', text: m.name + ' · ' + m.items.length + ' dishes' }),
+        el('button', { type: 'button', class: 'rb-btn rb-link', onclick: function () { menu.items = JSON.parse(JSON.stringify(m.items)); menu.ticked = {}; menuChanged(); status('Loaded "' + m.name + '".'); }, text: 'load' }),
+        db && el('button', { type: 'button', class: 'rb-btn rb-link', onclick: function () { db.doc('savedMenus/' + m.id).delete(); }, text: 'delete' })
+      ]));
+    });
+  }
+  function saveMenuAs() {
+    var name = $('#rb-menu-name').value.trim();
+    if (!name || !menu.items.length || !db) return;
+    db.collection('savedMenus').doc(slug(name)).set({ name: name, items: JSON.parse(JSON.stringify(menu.items)), at: new Date().toISOString() })
+      .then(function () { $('#rb-menu-name').value = ''; status('Saved "' + name + '".'); })
+      .catch(function (e) { status('Could not save: ' + (e && e.message || e)); });
+  }
+
+  /* ---------- shopping list ---------- */
+  function shopItems() {
+    var items = [];
+    menu.items.forEach(function (it) {
+      var r = recipes[it.id]; if (!r) return;
+      var f = it.serves / r.serves;
+      $$('td.ing', r.article).forEach(function (td) {
+        var q = $('span.q', td), name = td.textContent;
+        if (q) name = name.replace(q.textContent, '');
+        items.push({ qty: q ? q.dataset.q0 : '', name: name, factor: f, recipe: r.title });
+      });
+    });
+    return RB.shoppingList(items);
+  }
+  var lastShopText = '';
+  function renderShop() {
+    var list = shopItems(), box = $('#rb-shop-list'), lines = [];
+    box.textContent = '';
+    if (!menu.items.length) { box.appendChild(el('p', { class: 'rb-empty', text: 'Add dishes to the menu first.' })); lastShopText = ''; return; }
+    RB.AISLE_ORDER.forEach(function (a) {
+      var g = list.groups[a]; if (!g) return;
+      lines.push('', a.toUpperCase());
+      box.appendChild(el('h4', { text: a }));
+      g.forEach(function (e) {
+        var key = e.name + '|' + e.unit, amt = RB.amountText(e);
+        var pk = window.RB_PACKS ? RB.buyPack(e, window.RB_PACKS) : null;
+        lines.push((menu.ticked[key] ? '✓ ' : '☐ ') + amt + '  ' + e.name + (pk ? '  → buy ' + pk.text : ''));
+        var cb = el('input', { type: 'checkbox' }); cb.checked = !!menu.ticked[key];
+        cb.addEventListener('change', function () { if (cb.checked) menu.ticked[key] = true; else delete menu.ticked[key]; persistMenu(); renderShop(); });
+        box.appendChild(el('label', { class: 'rb-item' + (cb.checked ? ' done' : '') }, [cb, el('span', { class: 'rb-amt', text: amt }), el('span', { text: e.name }), el('small', { text: (pk ? 'Buy ' + pk.text + ' · ' : '') + e.from.join(', ') })]));
+      });
+    });
+    if (list.other.length) {
+      lines.push('', 'ALSO NEEDED');
+      box.appendChild(el('h4', { text: 'Also needed (no amount to add up)' }));
+      var seen = {};
+      list.other.forEach(function (o) {
+        if (seen[o.name]) return; seen[o.name] = 1;
+        lines.push('☐ ' + o.name + (o.qty ? ' (' + o.qty + ')' : ''));
+        box.appendChild(el('div', { class: 'rb-item' }, [el('span', { class: 'rb-amt', text: o.qty || '—' }), el('span', { text: o.name })]));
+      });
+    }
+    lastShopText = 'Shopping list\n' + menu.items.map(function (i) { return recipes[i.id] ? '• ' + recipes[i.id].title + ' (' + i.serves + ')' : ''; }).filter(Boolean).join('\n') + '\n' + lines.join('\n');
+  }
+  function copyShop() {
+    if (!lastShopText) return;
+    navigator.clipboard.writeText(lastShopText).then(function () { status('Shopping list copied. Paste it into WhatsApp or Notes.'); }, function () {
+      var t = $('#rb-shop-text'); t.hidden = false; t.value = lastShopText; t.select(); status('Copy the text below.');
+    });
+  }
+
+  /* ---------- added recipes (db) ---------- */
+  var ALLOWED = { TABLE: 1, COLGROUP: 1, COL: 1, TBODY: 1, TR: 1, TH: 1, TD: 1, SPAN: 1, BR: 1, B: 1, I: 1, EM: 1, STRONG: 1 };
+  var CLASSES = /^(title|ing|prep|step|blank|q|t|recipe)$/;
+  function clean(node) {
+    $$('*', node).reverse().forEach(function (n) {
+      if (/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|TEMPLATE|NOSCRIPT)$/.test(n.tagName)) { n.remove(); return; }
+      if (!ALLOWED[n.tagName]) { n.replaceWith(document.createTextNode(n.textContent)); return; }
+      Array.prototype.slice.call(n.attributes).forEach(function (a) {
+        var ok = (a.name === 'class') || (a.name === 'rowspan' || a.name === 'colspan') && /^\d{1,2}$/.test(a.value) || (a.name === 'style' && n.tagName === 'COL' && /^width:\s*\d+px;?$/.test(a.value));
+        if (!ok) n.removeAttribute(a.name);
+        if (a.name === 'class') n.className = a.value.split(/\s+/).filter(function (c) { return CLASSES.test(c); }).join(' ');
+      });
+    });
+    return node;
+  }
+  function tableFrom(html) {
+    var doc = new DOMParser().parseFromString('<div>' + (html || '') + '</div>', 'text/html');
+    var t = doc.querySelector('table');
+    if (!t) return null;
+    t = clean(t); t.className = 'recipe';
+    return t;
+  }
+  function buildArticle(d) {
+    var a = el('article', { class: 'recipe', id: d.id });
+    a.appendChild(el('header', {}, [
+      el('h3', { text: d.title }),
+      el('p', { class: 'lede', text: d.lede || ('SERVES ' + d.serves) }),
+      el('ul', { class: 'tags' }, (d.tags || []).map(function (t) { return el('li', { text: t }); }))
+    ]));
+    var fig = el('figure', { class: 'photo' });
+    a.appendChild(fig);
+    var sc = el('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': d.title + ' recipe table, scrolls sideways on narrow screens' });
+    var t = tableFrom(d.table_html);
+    sc.appendChild(t || el('p', { text: 'This recipe has no table.' }));
+    a.appendChild(sc);
+    if (d.notes && d.notes.length) a.appendChild(el('dl', { class: 'notes' }, d.notes.map(function (n) { return el('div', {}, [el('dt', { text: n.term }), el('dd', { text: n.text })]); })));
+    if (d.source) a.appendChild(el('p', { class: 'foot', text: 'Source: ' + d.source }));
+    a.appendChild(el('a', { class: 'top', href: '#top', text: 'Back to top' }));
+    return a;
+  }
+  function sectionFor(cat) {
+    var s = $$('section.cat').find(function (s) { var h = $('h2', s); return h && h.textContent.trim().toLowerCase() === cat.trim().toLowerCase(); });
+    if (s) return s;
+    var id = 'cat-' + slug(cat);
+    s = el('section', { class: 'cat', id: id }, [el('div', { class: 'cat-head' }, [el('h2', { text: cat })])]);
+    var tips = $('#tips');
+    tips ? tips.parentNode.insertBefore(s, tips) : $('main').appendChild(s);
+    $('ul.chips').appendChild(el('li', {}, [el('a', { href: '#' + id, text: cat })]));
+    return s;
+  }
+  function indexRow(r) {
+    var row = el('tr', { 'data-rb': r.id }, [el('td', {}, [el('a', { href: '#' + r.id, text: r.title })]), el('td', { class: 'cat', text: r.category }), el('td', { class: 'num', text: r.time || 'added' }), el('td', { class: 'num', text: '' })]);
+    $('table.index').appendChild(row);
+  }
+  function showAdded(snap) {
+    snap.docChanges().forEach(function (ch) {
+      var id = ch.doc.id, old = document.getElementById(id);
+      if (ch.type === 'removed') {
+        if (old && recipes[id] && recipes[id].added) { old.remove(); delete recipes[id]; var row = $('tr[data-rb="' + id + '"]'); if (row) row.remove(); }
+        return;
+      }
+      var d = ch.doc.data(); if (!d || !d.title) return;
+      d = Object.assign({}, d, { id: id });
+      var a = buildArticle(d);
+      if (old && recipes[id] && recipes[id].added) { old.replaceWith(a); var r0 = $('tr[data-rb="' + id + '"]'); if (r0) r0.remove(); }
+      else if (old) return;  // never shadow a built-in recipe
+      else sectionFor(d.category || 'My recipes').appendChild(a);
+      var r = register(a, true); r.time = d.time; r.containers = Array.isArray(d.containers) ? d.containers.filter(function (c) { return c && c.item && c.kind; }) : []; paintContainers(r, 1); indexRow(r); addIndexBtn(r);
+      paintPhoto(r);
+    });
+    counts(); renderMenu();
+  }
+  function counts() {
+    var n = Object.keys(recipes).length, c = $$('section.cat').filter(function (s) { return s.id !== 'tips'; }).length;
+    var l = $('main > header .lede'); if (l) l.textContent = n + ' RECIPES · ' + c + ' CATEGORIES · INGREDIENTS READ LEFT TO RIGHT INTO THE STEPS';
+  }
+  var pendingDelete = null;
+  function askDelete(r) { pendingDelete = r; $('#rb-del-name').textContent = r.title; $('#rb-del').showModal(); }
+  function doDelete() {
+    var r = pendingDelete; $('#rb-del').close(); if (!r || !db) return;
+    menu.items = menu.items.filter(function (i) { return i.id !== r.id; }); menuChanged();
+    db.doc('recipes/' + r.id).delete().then(function () { return db.doc('photos/' + r.id).delete(); }).catch(function (e) { status('Could not delete: ' + (e && e.message || e)); });
+  }
+
+  /* ---------- photos (shared through db) ---------- */
+  var photos = {};
+  function shrink(file, max, q, asBlob) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        if (asBlob) c.toBlob(function (b) { b ? res(b) : rej(new Error('Could not read that image')); }, 'image/jpeg', q);
+        else res(c.toDataURL('image/jpeg', q));
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Could not read that image')); };
+      img.src = url;
+    });
+  }
+  function photoPicker(r, label) {
+    var i = el('input', { type: 'file', accept: 'image/*', 'aria-label': label });
+    i.addEventListener('change', function () {
+      var f = i.files && i.files[0]; if (!f || !db) return;
+      shrink(f, 640, 0.75).then(function (d) { return db.doc('photos/' + r.id).set({ data: d }); })
+        .catch(function (e) { status('Could not save the photo: ' + (e && e.message || e)); });
+    });
+    return el('label', { class: 'photobtn' }, [label, i]);
+  }
+  function paintPhoto(r) {
+    var fig = $('figure.photo', r.article);
+    if (fig && !fig.classList.contains('rb-slot') && $('img', fig) && $('img', fig).getAttribute('src')) return;  // bundled photo
+    if (!fig) { fig = el('figure', { class: 'photo' }); var h = $('header', r.article); h.parentNode.insertBefore(fig, h.nextSibling); }
+    fig.classList.add('rb-slot'); fig.textContent = '';
+    var d = photos[r.id];
+    if (d) {
+      fig.appendChild(el('img', { src: d, alt: 'Photo of ' + r.title, width: '640', height: '640' }));
+      if (db) fig.appendChild(el('div', { class: 'photoact' }, [photoPicker(r, 'Replace photo'), el('button', { type: 'button', onclick: function () { db.doc('photos/' + r.id).delete(); }, text: 'Remove' })]));
+    } else if (db) {
+      fig.appendChild(el('p', { text: 'No photo of this dish yet.' }));
+      fig.appendChild(el('div', { class: 'photoact' }, [photoPicker(r, 'Add a photo')]));
+    } else fig.remove();
+  }
+
+  /* ---------- add a recipe (Claude) ---------- */
+  var draft = null, picked = [];  // [{file, ok, reason, warn}] from camera and library, in order
+  var MAX_MB = 25;
+  // Check a photo before it is used: can it be opened, is it big and bright enough to read?
+  function inspect(file) {
+    var mb = file.size / 1048576, name = file.name || 'photo';
+    var isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(name);
+    if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|gif|heic|heif|bmp)$/i.test(name))
+      return Promise.resolve({ file: file, ok: false, reason: 'Not a photo (' + (file.type || name.split('.').pop() || 'unknown type') + '). Choose a JPG or PNG picture.' });
+    if (mb > MAX_MB) return Promise.resolve({ file: file, ok: false, reason: 'Too large (' + mb.toFixed(0) + ' MB, limit ' + MAX_MB + ' MB). Take it again or use a screenshot of it.' });
+    return new Promise(function (res) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, warn = [];
+        URL.revokeObjectURL(url);
+        if (Math.min(w, h) < 500) warn.push('Low resolution (' + w + ' × ' + h + ' px). Small text may be unreadable; take a closer photo.');
+        try {
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var x = c.getContext('2d'); x.drawImage(img, 0, 0, 64, 64);
+          var d = x.getImageData(0, 0, 64, 64).data, sum = 0;
+          for (var i = 0; i < d.length; i += 4) sum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          var lum = sum / (d.length / 4);
+          if (lum < 45) warn.push('Very dark. Use more light or the flash.');
+          else if (lum > 240) warn.push('Very bright or washed out. Avoid glare and direct light.');
+        } catch (e) {}
+        res({ file: file, ok: true, warn: warn.join(' ') });
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        res({ file: file, ok: false, reason: isHeic
+          ? 'HEIC photo that this browser cannot open. On iPhone set Settings › Camera › Formats › Most Compatible, or send a screenshot of the photo.'
+          : 'The file could not be opened. It may be damaged or in a format this browser does not support (use JPG or PNG).' });
+      };
+      img.src = url;
+    });
+  }
+  function addPicked(input) {
+    var files = Array.prototype.slice.call(input.files || []), room = 4 - picked.length;
+    input.value = '';
+    if (files.length > room) addMsg('Up to 4 photos. ' + (files.length - Math.max(room, 0)) + ' not added; remove one to add another.');
+    Promise.all(files.slice(0, Math.max(room, 0)).map(inspect)).then(function (rs) {
+      rs.forEach(function (r) { if (picked.length < 4) picked.push(r); });
+      renderThumbs();
+      var bad = rs.filter(function (r) { return !r.ok; }).length;
+      if (bad) addMsg(bad + ' photo' + (bad > 1 ? 's' : '') + ' cannot be used. The reason is shown under each one.');
+    });
+  }
+  function renderThumbs() {
+    var box = $('#rb-thumbs'); box.textContent = '';
+    picked.forEach(function (p, i) {
+      var kids = [];
+      if (p.ok) {
+        var url = URL.createObjectURL(p.file), img = el('img', { src: url, alt: 'Photo ' + (i + 1) });
+        img.onload = function () { URL.revokeObjectURL(url); };
+        kids.push(img);
+      } else kids.push(el('div', { class: 'rb-thumbbad', 'aria-hidden': 'true', text: '✕' }));
+      kids.push(el('button', { type: 'button', class: 'rb-btn', 'aria-label': 'Remove photo ' + (i + 1), onclick: function () { picked.splice(i, 1); renderThumbs(); }, text: '✕' }));
+      var cap = !p.ok ? el('p', { class: 'rb-thumbmsg bad', text: 'Photo ' + (i + 1) + ' cannot be used: ' + p.reason })
+        : p.warn ? el('p', { class: 'rb-thumbmsg warn', text: 'Photo ' + (i + 1) + ': ' + p.warn }) : null;
+      box.appendChild(el('div', { class: 'rb-thumbwrap' }, [el('div', { class: 'rb-thumb' + (p.ok ? '' : ' bad') }, kids), cap]));
+    });
+  }
+  function usable() { return picked.filter(function (p) { return p.ok; }); }
+  function categories() { return $$('section.cat h2').map(function (h) { return h.textContent; }).filter(function (c) { return !/^Tips/.test(c); }); }
+  var EXAMPLE = '<table class="recipe"><colgroup><col style="width: 168px"><col style="width: 78px"><col style="width: 100px"><col style="width: 100px"></colgroup>' +
+    '<tr><th class="title" colspan="4">Spicy mayo rice (serves 2)</th></tr>' +
+    '<tr><td class="ing"><span class="q">150 mL</span> rice</td><td class="prep">rinse</td><td class="step">simmer in 300 mL salted water until absorbed<span class="t">15 min</span></td><td class="step" rowspan="3">mix through and serve</td></tr>' +
+    '<tr><td class="ing"><span class="q">100 mL</span> mayo</td><td class="prep"></td><td class="step" rowspan="2">mix together</td></tr>' +
+    '<tr><td class="ing"><span class="q">10 mL</span> gochujang</td><td class="prep"></td></tr></table>';
+  function prompt(text) {
+    return 'You convert a recipe into the "Cooking for Engineers" ledger table used by a family recipe book.\n' +
+      'Rules:\n- The recipe may be in any language and any script (photos or text, e.g. Afrikaans, Arabic, French, Portuguese). Read it in that language and write everything in English (South African English). Put the original title in notes as {"term": "Original title", "text": "..."} when it was not English, and translate local ingredient names, keeping the local name in brackets where it helps shopping.\n- Metric units, South African English. Use g, kg, mL, L; tsp/Tbs. may stay with mL in brackets, e.g. "2 Tbs. (30 mL)". Whole items are plain numbers ("2").\n' +
+      '- One row per ingredient: <td class="ing"><span class="q">QTY UNIT</span> name</td><td class="prep">prep, or empty</td>, then step cells.\n' +
+      '- Steps read left to right. A step cell spans (rowspan) every ingredient row it combines; later columns combine earlier results; the last column is the finished dish. Put times in <span class="t">..</span>. Use <td class="step blank"></td> to pad.\n' +
+      '- First row: <th class="title" colspan="N">Short name (serves S)</th>. One <col> per column: 168px, 78px, then 100px each.\n' +
+      '- Condense steps to short imperative phrases. Do not invent ingredients or amounts. If an amount is unreadable, write "to taste" or "as needed" and say so in notes.\n' +
+      'Example table:\n' + EXAMPLE + '\n' +
+      'Existing categories: ' + categories().join('; ') + '. Use one of them unless none fits.\n' +
+      'Reply with ONLY a JSON object: {"title": string, "category": string, "serves": number, "time": "e.g. 40 min total", "lede": "SERVES 2 · 25 MIN HANDS-ON · 40 MIN OVERALL · SOURCE", "tags": [up to 3 short strings], "table_html": string, "notes": [{"term": string, "text": string}], "source": "where the recipe came from, if shown", "containers": [{"item": "e.g. pot, oven dish, cake tin, frying pan, ramekin", "kind": "vol|area|each|fixed", "litres": number (vol), "rect": [cm, cm] or "round": cm (area), "count": number (each), "size": "text (each/fixed)", "from": true if the recipe states this container}]}\n' +
+      'Photos: they are numbered 1, 2, … in the order attached. For any photo that is hard to use, add "photo_issues": [{"photo": number, "problem": "blurry | too dark | glare | cut off | handwriting unreadable | not a recipe | other", "detail": "what exactly cannot be read"}]. If nothing usable can be read at all, reply ONLY {"error": "plain reason, e.g. the photo is too blurry to read the amounts"} and do not invent a recipe.\n' +
+      'Containers: list every pot, pan, tin or dish needed, sized for the stated servings. kind "vol" = pots and bowls (give litres), "area" = baking tins, trays and oven dishes where depth matters (give rect or round in cm), "each" = one per portion such as mugs or ramekins, "fixed" = frying pans, waffle irons, blenders. Use the recipe\'s sizes when given (from: true); otherwise suggest a sensible standard size (from: false).\n\n' +
+      (text ? 'Recipe text from the user:\n' + text : 'The recipe is in the attached photo(s).');
+  }
+  function parseJSON(s) { var a = s.indexOf('{'), b = s.lastIndexOf('}'); if (a < 0 || b < a) throw new Error('No recipe came back'); return JSON.parse(s.slice(a, b + 1)); }
+
+  function processRecipe() {
+    var files = usable().map(function (p) { return p.file; }), text = $('#rb-text').value.trim();
+    if (!files.length && !text) { addMsg(picked.length ? 'None of the photos can be used (see the reasons under them). Take new photos or paste the text.' : 'Add a photo or paste the recipe text first.'); return; }
+    if (!sample) { addMsg('Claude is not available in this view. Open the book on claude.ai while signed in.'); return; }
+    var btn = $('#rb-process'); btn.disabled = true; addMsg('Claude is reading the recipe… this can take a minute.');
+    var imgs;
+    var nums = picked.map(function (p, i) { return p.ok ? i + 1 : 0; }).filter(Boolean);  // photo numbers as the user sees them
+    Promise.all(files.slice(0, 4).map(function (f, i) { return shrink(f, 1600, 0.85, true).catch(function () { throw new Error('Photo ' + nums[i] + ' could not be prepared for sending. Remove it and try again.'); }); }))
+      .then(function (blobs) {
+        imgs = blobs;
+        return sample.limits ? sample.limits() : {};
+      })
+      .then(function (lim) {
+        if (imgs.length && !(lim && lim.images)) throw { message: 'Photos cannot be sent to Claude in this view (the claude.ai app or plan does not allow images here). Paste the text instead.' };
+        return sample(prompt(text), imgs.length ? { images: imgs, modelTier: 'default' } : { modelTier: 'default' });
+      })
+      .then(function (res) {
+        var d = parseJSON(res.text);
+        var issues = Array.isArray(d.photo_issues) ? d.photo_issues.filter(function (x) { return x && x.problem; }) : [];
+        var issueText = issues.map(function (x) { return 'Photo ' + (nums[(+x.photo || 1) - 1] || x.photo) + ': ' + x.problem + (x.detail ? ' (' + x.detail + ')' : ''); });
+        if (d.error || !d.title || !d.table_html) throw new Error((d.error ? 'Claude could not read a recipe. ' + d.error : 'The answer was incomplete.') + (issueText.length ? ' ' + issueText.join('. ') + '.' : '') + ' Take clearer photos or paste the text.');
+        d._issues = issueText;
+        d.serves = Math.max(1, Math.round(+d.serves || 2));
+        draft = d;
+        showPreview();
+        addMsg('Done. Now check and edit it in Step 2 below.');
+      })
+      .catch(function (e) { addMsg((e && e.code === 'rate_limited') ? 'Claude is busy. Wait a minute and try again.' : (e && e.code === 'not_granted') ? 'Claude was not allowed for this page.' : 'Could not process it: ' + (e && e.message || e)); })
+      .then(function () { btn.disabled = false; });
+  }
+  // Step 2: an editable preview plus automatic checks. Step 3 (Save) unlocks when the three boxes are ticked.
+  function showPreview() {
+    var box = $('#rb-preview'); box.textContent = '';
+    var t = tableFrom(draft.table_html);
+    if (!t) { addMsg('No table came back. Try again.'); return; }
+    var title = el('h3', { contenteditable: 'true', 'aria-label': 'Recipe title', text: draft.title });
+    var cat = el('input', { list: 'rb-cats', value: draft.category || 'My recipes', 'aria-label': 'Category' });
+    var serves = el('input', { type: 'number', min: '1', max: '50', value: String(draft.serves), 'aria-label': 'Serves' });
+    var time = el('input', { value: draft.time || '', 'aria-label': 'Time', placeholder: 'e.g. 40 min total' });
+    var source = el('input', { value: draft.source || '', 'aria-label': 'Source', placeholder: 'e.g. Ouma\'s recipe card' });
+    var notes = el('textarea', { rows: '3', 'aria-label': 'Notes, one per line as Heading: text' });
+    notes.value = (draft.notes || []).map(function (n) { return n.term + ': ' + n.text; }).join('\n');
+    var conts = (draft.containers || []).filter(function (c) { return c && c.item && c.kind; });
+    var cbox = el('ul', { class: 'rb-clist' });
+    function paintConts() {
+      cbox.textContent = '';
+      if (!conts.length) cbox.appendChild(el('li', { class: 'rb-empty', text: 'None listed.' }));
+      conts.forEach(function (c, i) { cbox.appendChild(el('li', {}, [RB.containerText(c, 1) + ' ', el('button', { type: 'button', class: 'rb-btn rb-link', 'aria-label': 'Remove container ' + c.item, onclick: function () { conts.splice(i, 1); paintConts(); }, text: 'remove' })])); });
+    }
+    paintConts();
+    t.setAttribute('contenteditable', 'true');
+    t.addEventListener('input', function () { warn(t); });
+    box.appendChild(title);
+    box.appendChild(el('div', { class: 'rb-grid' }, [
+      el('label', {}, ['Category', cat]), el('label', {}, ['Serves', serves]), el('label', {}, ['Time', time]), el('label', {}, ['Source', source])
+    ]));
+    box.appendChild(el('div', { class: 'scroll' }, [t]));
+    box.appendChild(el('label', { class: 'rb-field' }, ['Notes (one per line, "Heading: text")', notes]));
+    box.appendChild(el('div', { class: 'rb-field' }, ['Containers (sizes for the portions above)', cbox]));
+    draft._read = function () {
+      draft.title = title.textContent.trim(); draft.category = cat.value.trim() || 'My recipes'; draft.serves = Math.max(1, Math.round(+serves.value) || 1);
+      draft.time = time.value.trim(); draft.source = source.value.trim(); draft.containers = conts;
+      draft.notes = notes.value.split('\n').map(function (l) { var i = l.indexOf(':'); l = l.trim(); return !l ? null : i > 0 ? { term: l.slice(0, i).trim(), text: l.slice(i + 1).trim() } : { term: 'Note', text: l }; }).filter(Boolean);
+      t.removeAttribute('contenteditable'); draft.table_html = t.outerHTML; t.setAttribute('contenteditable', 'true');
+      return t;
+    };
+    $$('#rb-checks input').forEach(function (c) { c.checked = false; });
+    gateSave();
+    warn(t);
+    $('#rb-verify').hidden = false;
+    $('#rb-step2').scrollIntoView({ block: 'start' });
+  }
+  function warn(t) {
+    var w = [], ings = $$('td.ing', t);
+    if (!ings.length) w.push('No ingredients found in the table.');
+    ings.forEach(function (td) {
+      var q = $('span.q', td), name = (td.textContent.replace(q ? q.textContent : '', '') || '').trim();
+      if (!q || !q.textContent.trim()) w.push('"' + name + '" has no amount.');
+      else if (!RB.parseQty(q.textContent)) w.push('"' + name + '": amount is "' + q.textContent.trim() + '". Check the original.');
+    });
+    if (!$$('td.step', t).some(function (s) { return s.textContent.trim(); })) w.push('No steps found in the table.');
+    (draft._issues || []).forEach(function (x) { w.push(x); });
+    (draft.notes || []).forEach(function (n) { if (/unreadable|unclear|illegible|not visible|guess/i.test(n.text)) w.push('Claude noted: ' + n.text); });
+    var box = $('#rb-warn'); box.textContent = '';
+    box.appendChild(w.length
+      ? el('div', { class: 'rb-warnbox' }, [el('b', { text: 'Check these (' + w.length + '):' }), el('ul', {}, w.map(function (x) { return el('li', { text: x }); }))])
+      : el('p', { class: 'rb-okbox', text: '✓ ' + ings.length + ' ingredients, all with amounts. Still compare with the original.' }));
+  }
+  function gateSave() { $('#rb-save').disabled = !$$('#rb-checks input').every(function (c) { return c.checked; }); }
+  function saveRecipe() {
+    if (!draft || !db) { addMsg(db ? 'Nothing to save.' : 'Saving needs the book open on claude.ai while signed in.'); return; }
+    var tbl = draft._read();
+    if (!draft.title) { addMsg('Give the recipe a title first.'); return; }
+    if (!$$('td.ing', tbl).length) { addMsg('The table has no ingredients. Fix it or process again.'); return; }
+    var id = slug(draft.title);
+    while (recipes[id] && !recipes[id].added) id += '-2';
+    var body = { title: draft.title, category: draft.category, serves: draft.serves, time: draft.time || '', tags: (draft.tags || []).slice(0, 3), table_html: draft.table_html, notes: draft.notes || [], source: draft.source || '', containers: Array.isArray(draft.containers) ? draft.containers.slice(0, 6) : [], lede: (draft.lede || '').replace(/SERVES\s+\d+/i, 'SERVES ' + draft.serves), added: new Date().toISOString() };
+    var files = usable().map(function (p) { return p.file; }), usePhoto = $('#rb-usephoto').checked && files[0];
+    $('#rb-save').disabled = true;
+    db.doc('recipes/' + id).set(body)
+      .then(function () { return usePhoto ? shrink(files[0], 640, 0.75).then(function (d) { return db.doc('photos/' + id).set({ data: d }); }) : null; })
+      .then(function () { resetAdd(); closeAll(); status('Saved "' + body.title + '".'); setTimeout(function () { location.hash = id; }, 300); })
+      .catch(function (e) { addMsg(e && e.code === 'quota_exceeded' ? 'The book is full. Delete some recipes or photos first.' : 'Could not save: ' + (e && e.message || e)); })
+      .then(function () { $('#rb-save').disabled = false; });
+  }
+  function resetAdd() { draft = null; picked = []; renderThumbs(); $('#rb-text').value = ''; $('#rb-preview').textContent = ''; $('#rb-warn').textContent = ''; $('#rb-verify').hidden = true; addMsg(''); }
+  function addMsg(t) { $('#rb-add-msg').textContent = t; }
+
+  /* ---------- shell ---------- */
+  function status(t) { var s = $('#rb-status'); s.textContent = t; s.hidden = !t; clearTimeout(s._t); s._t = setTimeout(function () { s.hidden = true; }, 5000); }
+  function closeAll() { $$('dialog[open]').forEach(function (d) { d.close(); }); }
+  function open(id) { closeAll(); $('#' + id).showModal(); if (id === 'rb-shop') renderShop(); }
+
+  function start() {
+    indexHead();
+    $$('article.recipe').forEach(function (a) { register(a, false); });
+    $('#rb-open-menu').onclick = function () { open('rb-menu'); };
+    $('#rb-open-shop').onclick = function () { open('rb-shop'); };
+    $('#rb-open-add').onclick = function () { open('rb-add'); };
+    $$('.rb-close').forEach(function (b) { b.onclick = closeAll; });
+    $('#rb-clear').onclick = function () { menu.items = []; menu.ticked = {}; menuChanged(); };
+    $('#rb-save-menu').onclick = saveMenuAs;
+    $('#rb-untick').onclick = function () { menu.ticked = {}; persistMenu(); renderShop(); };
+    $('#rb-copy').onclick = copyShop;
+    $('#rb-cam').onchange = function () { addPicked(this); };
+    $('#rb-files').onchange = function () { addPicked(this); };
+    $('#rb-process').onclick = processRecipe;
+    $('#rb-save').onclick = saveRecipe;
+    $$('#rb-checks input').forEach(function (c) { c.onchange = gateSave; });
+    $('#rb-redo').onclick = function () { $('#rb-verify').hidden = true; processRecipe(); };
+    $('#rb-del-yes').onclick = doDelete;
+    $('#rb-del-no').onclick = function () { $('#rb-del').close(); };
+    var dl = $('#rb-cats'); categories().forEach(function (c) { dl.appendChild(el('option', { value: c })); });
+    try { var m = JSON.parse(localStorage.getItem('rb-menu') || 'null'); if (m && m.items) menu = m; } catch (e) {}
+    syncFromMenu();
+    renderMenu();
+    connect();
+  }
+
+  function connect() {
+    if (!window.claude || !window.claude.use) { offline(); return; }
+    window.claude.use('sample').then(function (s) { sample = s; if (!s) $('#rb-open-add').hidden = true; });
+    window.claude.use('db').then(function (d) {
+      if (!d) { offline(); return; }
+      db = d;
+      var timer = setTimeout(function () { status('The saved recipes and menus can\'t be reached yet.'); }, 10000);
+      var ok = function () { clearTimeout(timer); };
+      var err = function (e) { ok(); status('Saved data is not available: ' + (e && e.message || e)); };
+      db.collection('recipes').onSnapshot(function (s) { ok(); showAdded(s); }, err);
+      db.collection('photos').onSnapshot(function (s) {
+        s.docChanges().forEach(function (ch) { var d = ch.type === 'removed' ? null : (ch.doc.data() || {}).data; if (d) photos[ch.doc.id] = d; else delete photos[ch.doc.id]; if (recipes[ch.doc.id]) paintPhoto(recipes[ch.doc.id]); });
+      }, err);
+      db.doc('menus/current').onSnapshot(function (s) {
+        if (s.metadata.hasPendingWrites) return;
+        var v = s.exists ? s.data() : null;
+        if (v) { menu = { items: (v.items || []).map(function (i) { return { id: i.id, serves: i.serves }; }), ticked: Object.assign({}, v.ticked || {}) }; syncFromMenu(); renderMenu(); Object.keys(recipes).forEach(function (k) { paintMenuBtn(recipes[k]); }); }
+      }, err);
+      db.collection('savedMenus').onSnapshot(function (s) { saved = s.docs.map(function (x) { var v = x.data(); return { id: x.id, name: v.name, items: v.items || [] }; }); renderSaved(); }, err);
+      Object.keys(recipes).forEach(function (k) { paintPhoto(recipes[k]); });
+    });
+  }
+  function offline() {
+    $('#rb-open-add').hidden = true;
+    $('#rb-saved-wrap').hidden = true;
+    status('Open the book on claude.ai while signed in to add recipes and keep menus.');
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+
+</script>
+</body>
+</html>
